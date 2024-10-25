@@ -1,0 +1,7 @@
+{
+  "name": "unray",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}
