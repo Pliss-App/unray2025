@@ -1,0 +1,55 @@
+
+.menu{
+  background: white;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  padding: 0px !important;
+  position: absolute; 
+  top:10px; 
+  margin-left: 15px;
+  z-index: 5;
+  display: flex;
+  justify-content: center;
+  .btn-menu{
+
+    ion-icon{
+      font-size: 30px !important;
+    }
+}
+}
+
+
+
+
+.transparent-header {
+    --background: transparent;
+    box-shadow: none !important;
+    ion-toolbar {
+      --background: transparent;
+      --ion-background-color: transparent;
+      --ion-toolbar-background: transparent;
+      box-shadow: none !important; /* Opcional: elimina la sombra */
+    }
+  }
+
+  .custom-icon {
+    
+    color: orangered;
+  }
+
+  ion-fab-button {
+    --background: rgba(255, 255, 255, 0.3); /* Fondo semitransparente */
+    --background-activated: rgba(255, 255, 255, 0.5); /* Fondo al hacer clic */
+    --background-focused: rgba(255, 255, 255, 0.4); /* Fondo al estar enfocado */
+    --background-hover: rgba(255, 255, 255, 0.4); /* Fondo al pasar el cursor */
+    backdrop-filter: blur(5px); /* Agrega un desenfoque de fondo */
+    border-radius: 50%; /* Forma redonda */
+    box-shadow: none !important;
+    color:black
+  }
+
+  .elevation-3 {
+    box-shadow: 0 8px 8px rgba(0, 0, 0, 0.2); /* Elevación alta */
+    border:solid 2px rgb(235, 235, 235)
+  }

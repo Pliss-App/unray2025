@@ -1,0 +1,20 @@
+  
+  #mapa_conductor {
+    z-index: 3;
+    width: 100%;             // Ocupa todo el ancho disponible
+    height: 100vh !important;            // Ocupa todo el alto disponible
+    position: absolute;      // Posición absoluta para llenar el contenedor
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;  
+    overflow: hidden;             // Alinea al lado izquierdo
+  }
+
+  .map-placeholder {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background: #f0f0f0;
+  }

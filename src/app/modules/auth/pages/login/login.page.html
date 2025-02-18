@@ -1,0 +1,37 @@
+<ion-content [fullscreen]="true" class="background-image">
+  <div class="cajon">
+  <ion-grid class="centered-card">
+    <ion-row class="ion-justify-content-center">
+      <ion-col size="12" size-md="6" size-lg="4">
+        <ion-card  style="color:white; background: rgba(0, 0, 0, 0.5); box-shadow: none; border: 1px solid rgba(255, 255, 255, 0.9);">
+          <ion-card-content>
+            <div no-line style="text-align: center;">
+              <img style="width: 120px; height: 120px;" src="../../../../../assets/icon/icon.png" />
+            </div>
+            <form [formGroup]="credenciales" (ngSubmit)="onSubmit()">
+            <ion-item class="outlined-input">
+              <ion-input class="white-placeholder" formControlName="user"  type="text" placeholder="Correo/Teléfono"></ion-input>
+            </ion-item>    
+             <ion-text color="danger" *ngIf="isFieldInvalid('user')">
+              Campo es requerido
+            </ion-text>
+
+
+            <ion-item class="outlined-input">
+              <ion-input  class="white-placeholder" formControlName="password" type="password" placeholder="Contraseña"></ion-input>
+            </ion-item>
+            <ion-text color="danger" *ngIf="isFieldInvalid('password')">
+              Campo es requerido
+            </ion-text>
+            <p style="margin-top: 5px; margin-left: 6px; text-align: right;">Olvide mi contraseña <a style="font-weight: bolder;" (click)="crear('recuperar')">Recuperala aquí</a></p>
+            <ion-button type="submit" expand="full" class="ion-margin-top">Ingresar</ion-button>
+            <p style="margin-top: 15px; margin-left: 6px;">Aún no tienes cuenta? <a style="font-weight: bolder;" (click)="crear('register')">Crear cuenta</a></p>
+       
+            </form>
+          </ion-card-content>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</div>
+</ion-content>

@@ -1,0 +1,42 @@
+.custom-avatar {
+  width: 60px;
+  /* Ancho del avatar */
+  height: 60px;
+  /* Altura del avatar */
+  border: 5px solid white;
+}
+
+.btn-camera {
+  position: absolute;
+  right: 0px;
+  bottom: 5px;
+}
+
+ion-header {
+  box-shadow: none;
+
+  background: orangered;
+ /* border-bottom-left-radius: 40px 10px;
+  border-bottom-right-radius: 40px 10px;*/
+  display: flex;
+  justify-content: left;
+  /* Centra horizontalmente */
+  align-items: center;
+}
+
+.header-menu {
+  width: 100%;
+}
+
+.item-avatar {
+  background: orangered !important;
+}
+
+
+ion-footer {
+  --background: transparent; /* Cambia el fondo si es necesario */
+  border: none; /* Asegúrate de que no haya bordes visibles */
+}
+ion-toolbar {
+  --border-width: 0;
+}

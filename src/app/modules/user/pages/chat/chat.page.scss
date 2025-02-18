@@ -1,0 +1,68 @@
+/* Estilos generales */
+.chat-content {
+
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  height: 100%;
+}
+
+.contenedor-chat{
+  padding: 10px;
+}
+
+.message { 
+  padding: 10px;
+  border-radius: 15px;
+  max-width: 75%;
+  margin-bottom: 10px;
+  word-wrap: break-word;
+}
+
+/* Estilo de los mensajes enviados */
+.sent {
+  background-color: #007bff;
+  color: white;
+  align-self: flex-end;
+  border-top-right-radius: 10px;
+  border-bottom-left-radius: 10px;
+  border-top-left-radius: 10px;
+  margin-left: 30%;
+}
+
+/* Estilo de los mensajes recibidos */
+.received {
+  background-color: #f1f1f1;
+  color: black;
+  align-self: flex-start;
+  max-width: 70%;
+  border-bottom-left-radius: 10px;
+  border-top-right-radius: 10px;
+  border-bottom-right-radius: 10px;
+}
+
+/* Entrada de texto en el footer */
+ion-footer ion-item {
+  padding: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+}
+
+ion-input {
+  padding-left: 15px;
+  flex-grow: 1;
+  margin-right: 10px;
+  border: 1px rgb(245, 245, 245) solid;
+  border-radius: 15px;
+  background-color: ghostwhite;
+}
+
+ion-icon {
+  font-size: 24px; /* Ajusta el tamaño del ícono */
+  color: #007bff;  /* Cambia el color del ícono */
+}
+
+

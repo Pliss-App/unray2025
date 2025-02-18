@@ -1,0 +1,54 @@
+<ion-header>
+  <ion-toolbar>   <ion-buttons slot="end">
+    <ion-button size="large" (click)="logout()" >
+      <ion-icon style="color:red" name="log-out-outline"></ion-icon>
+    </ion-button>
+  </ion-buttons>
+    <ion-title>Documentación</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="center-container " *ngIf="!active">
+    <div class="center-element">
+      <form (ngSubmit)="onSubmit()" [formGroup]="form">
+        <ion-list>
+          <ion-item lines="none" *ngFor="let field of fields" style="margin-top: 25px; text-align: center; ">
+           
+           <div>
+            <ion-label style="margin-bottom: 10px; width: 100%; font-size: 16pt; font-weight: bolder; text-align: center;"
+              >{{ field.label }}</ion-label>
+              <ion-label 
+             >{{field.descripcion}}</ion-label>
+            <!-- Mostrar imagen cargada o imagen por defecto -->
+            <img
+              [src]="previews[field.nombre] || 'https://www.utec.edu.sv/solicitud-maestrias/assets/img/default_img.png'"
+              class="preview-image" />
+
+            <ion-button expand="block" color="primary" (click)="presentActionSheet(field.nombre)"
+              style="width: 100%; margin-bottom: 10px; margin-top: 10px;">
+              <ion-icon slot="start" name="camera"></ion-icon>
+              Cargar Imagen
+            </ion-button>
+          </div>
+
+          </ion-item>
+        </ion-list>
+
+      <!-- <ion-button style="margin-top: 35px;" expand="full" type="submit" [disabled]="!form.valid">
+          Guardar
+        </ion-button> -->
+
+        <ion-button style="margin-top: 35px;"  expand="block" type="submit" [disabled]="form.invalid || isLoading">
+          {{ isLoading ? 'Enviando...' : 'Enviar' }}
+        </ion-button>
+      </form>
+      <ion-loading *ngIf="isLoading" message="Enviando datos..." spinner="circles"></ion-loading>
+
+    </div>
+  </div>
+  <div *ngIf="active" style="text-align: center; padding-top: 25px; font-size: 16pt;">
+    Cargando...
+
+  </div>
+</ion-content>

@@ -1,0 +1,24 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Califica</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <h2>¿Cómo estuvo tu viaje?</h2>
+
+  <div class="star-container">
+    <ion-icon 
+      *ngFor="let star of stars; let i = index"
+      [name]="i < calificacion ? 'star' : 'star-outline'"
+      (click)="setCalificacion(i + 1)"
+      class="star">
+    </ion-icon>
+  </div>
+
+  <ion-textarea [(ngModel)]="comentario" placeholder="Deja un comentario..."></ion-textarea>
+
+  <ion-button expand="full" color="success" (click)="enviarCalificacion()">
+    Enviar Calificación
+  </ion-button>
+</ion-content>

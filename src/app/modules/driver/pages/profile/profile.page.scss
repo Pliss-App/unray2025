@@ -1,0 +1,85 @@
+ion-card {
+    box-shadow: none !important;
+  }
+  ion-title {
+    text-align: center;
+    width: 90%;
+    font-weight: bolder;
+  }
+  
+  ion-header{
+    box-shadow: none;
+    border: none;
+  }
+  
+  .icon-back{
+    font-size: 30px;
+    color: white;
+  }
+  
+  ion-toolbar{
+    border: none;
+  }
+  
+  
+  ion-icon {
+    color: orangered;
+  }
+  .outlined-input {
+    /*
+      --border-width: 1px;
+    --border-style: solid;
+    --border-color: var(--ion-color-medium); 
+    --border-radius: 8px;
+    --background: transparent; 
+    padding: 6px;
+    */
+  }
+  
+  .outlined-input ion-input {
+    padding: 12px;
+    /* Ajusta el padding del input */
+  }
+  
+  .ion-margin-top {
+    --border-radius: 10px !important;
+  }
+  
+  
+  .photo-profile {
+    margin-top: -1px;
+    border-bottom-left-radius: 80px 20px;
+    border-bottom-right-radius: 80px 20px;
+    border: 5px orangered solid;
+    background: orangered;
+  
+    display: flex;
+    justify-content: center;
+    /* Centra horizontalmente */
+    align-items: center;
+    /* Centra verticalmente */
+    height: 200px;
+  }
+  
+  
+  p {
+    color: white;
+    font-weight: bolder;
+  }
+  
+  .centered-card ion-card {
+    margin: 0; /* Elimina los márgenes */
+    padding: 0; /* Elimina los paddings, si es necesario */
+    width: 100%; /* Hace que el card ocupe todo el ancho del contenedor */
+    box-shadow: none; /* Elimina la sombra si no la deseas */
+  }
+  
+  ion-footer{
+    text-align: center;
+    box-shadow: none;
+  }
+  
+  ion-button{
+    border-radius: 25px !important;
+  
+  }

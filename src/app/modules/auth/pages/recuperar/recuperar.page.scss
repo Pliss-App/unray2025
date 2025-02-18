@@ -1,0 +1,32 @@
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    padding: 20px;
+  }
+  
+  ion-card {
+    width: 100%;
+    max-width: 400px;
+    margin: auto;
+    text-align: center;
+  }
+  
+  ion-card-title {
+    font-size: 1.4rem;
+    font-weight: bold;
+  }
+  
+  ion-card-subtitle {
+    font-size: 1rem;
+    color: var(--ion-color-medium);
+    margin-top: 10px;
+  }
+  
+  ion-text {
+    margin-top: 10px;
+    display: block;
+    text-align: left;
+  }
+  

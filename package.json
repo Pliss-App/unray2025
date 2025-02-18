@@ -21,18 +21,40 @@
     "@angular/platform-browser": "^18.0.0",
     "@angular/platform-browser-dynamic": "^18.0.0",
     "@angular/router": "^18.0.0",
+    "@awesome-cordova-plugins/android-permissions": "^6.14.0",
+    "@awesome-cordova-plugins/background-mode": "^6.14.0",
+    "@awesome-cordova-plugins/call-number": "^6.14.0",
+    "@awesome-cordova-plugins/camera": "^6.14.0",
+    "@awesome-cordova-plugins/core": "^6.14.0",
+    "@awesome-cordova-plugins/geolocation": "^6.14.0",
+    "@awesome-cordova-plugins/in-app-browser": "^6.12.0",
+    "@awesome-cordova-plugins/launch-navigator": "^6.14.0",
+    "@awesome-cordova-plugins/location-accuracy": "^6.14.0",
+    "@awesome-cordova-plugins/vibration": "^6.14.0",
+    "@capacitor/android": "^7.0.1",
     "@capacitor/app": "6.0.1",
+    "@capacitor/assets": "^3.0.5",
     "@capacitor/core": "6.1.2",
+    "@capacitor/geolocation": "^7.1.0",
     "@capacitor/haptics": "6.0.1",
     "@capacitor/keyboard": "6.0.2",
     "@capacitor/status-bar": "6.0.1",
+    "@ionic-native/call-number": "^5.36.0",
+    "@ionic-native/camera": "^5.36.0",
     "@ionic/angular": "^8.0.0",
+    "@tomtom-international/web-sdk-maps": "^6.25.0",
+    "@tomtom-international/web-sdk-services": "^6.25.0",
+    "cordova-plugin-call-number": "^1.0.1",
     "ionicons": "^7.0.0",
+    "ngx-onesignal": "^10.0.1",
+    "ngx-socket-io": "^4.8.4",
     "rxjs": "~7.8.0",
+    "socket.io-client": "^4.8.1",
     "tslib": "^2.3.0",
     "zone.js": "~0.14.2"
   },
   "devDependencies": {
+    "@angular-builders/custom-webpack": "^19.0.0",
     "@angular-devkit/build-angular": "^18.0.0",
     "@angular-eslint/builder": "^18.0.0",
     "@angular-eslint/eslint-plugin": "^18.0.0",
@@ -44,9 +66,26 @@
     "@angular/language-service": "^18.0.0",
     "@capacitor/cli": "6.1.2",
     "@ionic/angular-toolkit": "^11.0.1",
+    "@ionic/cordova-builders": "^12.1.2",
+    "@types/geojson": "^7946.0.14",
     "@types/jasmine": "~5.1.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
+    "call-number": "^1.0.1",
+    "cordova-android": "^13.0.0",
+    "cordova-plugin-actionsheet": "^2.3.3",
+    "cordova-plugin-android-permissions": "^1.1.5",
+    "cordova-plugin-background-mode": "^0.7.3",
+    "cordova-plugin-camera": "^6.0.0",
+    "cordova-plugin-device": "2.0.2",
+    "cordova-plugin-dialogs": "^2.0.2",
+    "cordova-plugin-geolocation": "^4.0.1",
+    "cordova-plugin-ionic-keyboard": "^2.0.5",
+    "cordova-plugin-ionic-webview": "^5.0.0",
+    "cordova-plugin-request-location-accuracy": "^2.3.0",
+    "cordova-plugin-splashscreen": "5.0.2",
+    "cordova-plugin-statusbar": "^2.4.2",
+    "cordova-plugin-vibration": "^3.1.1",
     "eslint": "^8.57.0",
     "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-jsdoc": "^48.2.1",
@@ -58,7 +97,39 @@
     "karma-coverage": "~2.2.0",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
-    "typescript": "~5.4.0"
+    "mx.ferreyra.callnumber": "^0.0.2",
+    "onesignal-cordova-plugin": "^5.2.9",
+    "typescript": "~5.4.0",
+    "uk.co.workingedge.phonegap.plugin.launchnavigator": "github:dpa99c/phonegap-launch-navigator"
   },
-  "description": "An Ionic project"
+  "description": "An Ionic project",
+  "cordova": {
+    "plugins": {
+      "cordova-plugin-statusbar": {},
+      "cordova-plugin-device": {},
+      "cordova-plugin-splashscreen": {},
+      "cordova-plugin-ionic-webview": {},
+      "cordova-plugin-ionic-keyboard": {},
+      "cordova-plugin-camera": {
+        "ANDROIDX_CORE_VERSION": "1.6.+"
+      },
+      "mx.ferreyra.callnumber": {},
+      "uk.co.workingedge.phonegap.plugin.launchnavigator": {
+        "GOOGLE_API_KEY_FOR_ANDROID": "",
+        "OKHTTP_VERSION": "3.12.0"
+      },
+      "call-number": {},
+      "onesignal-cordova-plugin": {},
+      "cordova-plugin-vibration": {},
+      "cordova-plugin-background-mode": {},
+      "cordova-plugin-geolocation": {
+        "GEOLOCATION_USAGE_DESCRIPTION": "To locate you"
+      },
+      "cordova-plugin-android-permissions": {},
+      "cordova-plugin-request-location-accuracy": {
+        "PLAY_SERVICES_LOCATION_VERSION": "16.+"
+      }
+    },
+    "platforms": []
+  }
 }

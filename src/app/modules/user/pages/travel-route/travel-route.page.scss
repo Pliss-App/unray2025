@@ -1,0 +1,24 @@
+.user-driver{
+  
+}
+
+.mapa-viaje{
+  
+}
+
+.viaje-sheet {
+   z-index: 15;
+    height: 500px; /* Altura fija */
+    min-height: 150px; /* Altura mínima */
+    max-height: 500px; /* Altura máxima */
+    overflow: hidden; /* Oculta contenido excedente */
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+  }
+
+  .tt-attribution {
+    font-size: 10px; /* Ajusta el tamaño del texto */
+    margin: 0; /* Elimina el margen */
+    opacity: 0.4; /* Cambia la opacidad si es necesario */
+  }

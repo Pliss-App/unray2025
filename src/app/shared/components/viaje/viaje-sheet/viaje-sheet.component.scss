@@ -1,0 +1,23 @@
+.bottom-sheet {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    height: 250px;  /* Altura inicial */
+    width: 100%;
+    background-color: #f7f7f7;
+    border-radius: 16px 16px 0 0;
+    box-shadow: 0 -4px 8px rgba(0, 0, 0, 0.2);
+    transition: height 0.2s ease-in-out;
+  
+    .drag-handle {
+      width: 40px;
+      height: 6px;
+      background-color: #ccc;
+      border-radius: 3px;
+      margin: 10px auto 0;
+      position: fixed;
+      left: 46%; /* Centra horizontalmente */
+    }
+  }
+  
+ 

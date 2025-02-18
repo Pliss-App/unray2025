@@ -1,0 +1,25 @@
+.center-container {
+    display: flex; /* Activa el modo Flexbox */
+    justify-content: center; /* Centra horizontalmente */
+
+   
+    text-align: center; /* Opcional: centra texto dentro del elemento */
+  }
+  
+  .center-element {
+    /* Opcional: agrega estilos adicionales para el elemento */
+    background-color: #f4f4f4; /* Ejemplo de fondo */
+    padding: 20px; /* Ejemplo de relleno */
+    border-radius: 8px; /* Ejemplo de bordes redondeados */
+  }
+
+  .preview-image{
+    width: 100%;
+    object-fit: cover;
+    height: 200px;
+  }
+
+  .alert-custom {
+    text-align: center;
+    font-size: 16px;
+  }

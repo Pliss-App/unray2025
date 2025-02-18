@@ -9,6 +9,8 @@
  * https://ionicframework.com/docs/layout/global-stylesheets
  */
 
+
+
 /* Core CSS required for Ionic components to work properly */
 @import "@ionic/angular/css/core.css";
 
@@ -34,4 +36,40 @@
 
 /* @import "@ionic/angular/css/palettes/dark.always.css"; */
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
-@import "@ionic/angular/css/palettes/dark.system.css";
+/*@import "@ionic/angular/css/palettes/dark.system.css";
+
+
+/* Estilo para centrar el icono y el texto en la alerta */
+
+.custom-alert .alert-title {
+  font-weight: bolder;
+  font-size: 16pt;
+}
+
+.custom-alert .alert-title,
+.custom-alert .alert-sub-title,
+.custom-alert .alert-message {
+  text-align: center;
+}
+
+
+
+.custom-alert .alert-icon {
+  display: flex;
+  justify-content: center;
+  font-size: 40px;
+  /* Tamaño del ícono */
+  color: #3880ff;
+  /* Cambia el color si deseas */
+  margin-bottom: 8px;
+}
+
+
+.custom-popup {
+
+}
+
+.custom-popup strong {
+
+}
+

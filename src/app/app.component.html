@@ -1,3 +1,57 @@
 <ion-app>
-  <ion-router-outlet></ion-router-outlet>
+  <ion-menu contentId="main-content" menuId="userMenu" side="start">
+    <ion-header *ngIf="user">
+      <div class="header-menu">
+      <ion-item lines="none" color="primary">
+        <ion-avatar slot="start" class="custom-avatar">
+          <img [src]="user.foto != null ? user.foto : 'https://t4.ftcdn.net/jpg/00/65/77/27/360_F_65772719_A1UV5kLi5nCEWI0BNLLiFaBPEkUbv5Fv.jpg'">
+        </ion-avatar>
+        <ion-label>{{user.nombre}} {{user.apellido}}</ion-label>
+      </ion-item>
+    </div>
+    </ion-header>
+    <ion-content>
+      <ion-list>
+        <ion-item routerLink="/user/home" (click)="closeMenu('viajar')">Viajar</ion-item>
+        <ion-item routerLink="/user/profile" (click)="closeMenu('')">Perfil</ion-item>
+        <ion-item routerLink="/user/profile" (click)="closeMenu('')">Viajes</ion-item>
+      </ion-list>
+
+    </ion-content>
+    <ion-footer lines="none">
+      <ion-toolbar>
+        <ion-button color="danger" expand="full" (click)="logout()" block>SALIR</ion-button>
+
+      </ion-toolbar>
+    </ion-footer>
+  </ion-menu>
+
+  <ion-menu contentId="main-content" menuId="driverMenu" side="start">
+    <ion-header *ngIf="user">
+      <div class="header-menu">
+      <ion-item lines="none" color="primary">
+        <ion-avatar slot="start" class="custom-avatar">
+          <img [src]="user.foto != null ? user.foto : 'https://t4.ftcdn.net/jpg/00/65/77/27/360_F_65772719_A1UV5kLi5nCEWI0BNLLiFaBPEkUbv5Fv.jpg'">
+        </ion-avatar>
+        <ion-label>{{user.nombre}} {{user.apellido}}</ion-label>
+      </ion-item>
+    </div>
+    </ion-header>
+    <ion-content>
+      <ion-list>
+        <ion-item routerLink="/driver/home" (click)="closeMenu('')"><ion-icon slot="start" name="home-outline"></ion-icon>Inicio</ion-item>
+        <ion-item routerLink="/driver/profile" (click)="closeMenu('')"><ion-icon slot="start" name="person-outline"></ion-icon>Perfil</ion-item>
+        <ion-item routerLink="/driver/profile" (click)="closeMenu('')"><ion-icon slot="start" name="car-outline"></ion-icon>Viajes</ion-item>
+        <ion-item routerLink="/driver/profile" (click)="closeMenu('')">   <ion-icon slot="start" name="wallet-outline"></ion-icon>Billetera</ion-item>
+      </ion-list>
+    </ion-content>
+    <ion-footer>
+      <ion-toolbar lines="none">
+        <ion-button color="danger" expand="full" (click)="logout()" block>SALIR</ion-button>
+
+      </ion-toolbar>
+    </ion-footer>
+  </ion-menu>
+
+  <ion-router-outlet id="main-content"></ion-router-outlet>
 </ion-app>

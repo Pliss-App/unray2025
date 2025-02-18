@@ -1,0 +1,79 @@
+<!-- bottom-sheet.component.html -->
+<div class="alert-search-driver" *ngIf="estadoSolicitud ">
+
+  <div class="center-div">
+    <div class="estado-solicitud">
+      <p>{{ estadoSolicitud }}</p>
+    </div>
+
+    <div *ngIf="conductorSeleccionado">
+      <p>Conductor seleccionado: {{ conductorSeleccionado }}</p>
+    </div>
+  </div>
+</div>
+
+
+<div class="bottom-sheet" #bottomSheet>
+
+
+  <div *ngIf="services.length>0" class="horizontal-scroll">
+    <div class="card" *ngFor="let item of services" (click)="getService(item)"
+      [ngClass]="{ 'selected-card': item.id === selectedServiceId }">
+      <img [src]="item.foto" class="imagen-service" alt="Imagen" />
+      <h3 class="nombre-servicio">{{ item.nombre }}</h3>
+    </div>
+  </div>
+
+  <div *ngIf="services.length==0" class="horizontal-scroll">
+    <div class="card" *ngFor="let item of [0,1,2,3,4]">
+      <ion-item style="border-radius: 10px;">
+        <ion-thumbnail style="width: 100%; border-radius: 10px;" animated>
+          <ion-skeleton-text animated></ion-skeleton-text>
+        </ion-thumbnail>
+      </ion-item>
+    </div>
+  </div>
+
+  <!-- Contenido del bottom sheet -->
+  <div class="content">
+    <div *ngIf="distance" class="data-distance">
+      <p style="margin: 0px;"> <ion-icon name="navigate"></ion-icon> {{distance.distance}} {{distance.abrdistance}} -
+        <ion-icon name="stopwatch"></ion-icon>{{distance.time}} {{distance.abrtime}} | <span
+          style="color: green; font-weight: bolder; font-size: 20pt;">Q{{costoViaje}}</span> </p>
+    </div>
+
+    <ion-grid style="margin-bottom: -25px;" class="centered-card">
+      <ion-row class="ion-justify-content-center">
+        <ion-col size="12" size-md="12" size-lg="12">
+          <ion-searchbar [(ngModel)]="directionSalida" (ionInput)="onSearch($event,'salida')"
+            (ionFocus)="onSearch($event, 'salida')" show-clear-button="never" class="rounded-searchbar"
+            placeholder="Buscar dirección...">
+            <ion-icon name="locate-outline" slot="start"></ion-icon>
+          </ion-searchbar>
+        </ion-col>
+
+      </ion-row>
+    </ion-grid>
+
+    <ion-grid class="centered-card" style="margin-top: -30px;">
+      <ion-row class="ion-justify-content-center">
+        <ion-col size="12" size-md="12" size-lg="12">
+          <ion-searchbar [(ngModel)]="directionDestino" animated show-clear-button="never" class="rounded-searchbar"
+            (ionInput)="onSearch($event,'destino')" (ionFocus)="onSearch($event, 'destino')" placeholder="¿A dónde vas?"
+            debounce="500">
+            <ion-icon slot="start" name="location"></ion-icon>
+          </ion-searchbar>
+        </ion-col>
+        <!-- <ion-col size="2" size-md="2" size-lg="2">
+          <ion-button fill="clear" shape="round" (click)="addDestination('add')">
+            <ion-icon name="add-circle" size="large" ></ion-icon>
+          </ion-button>
+        </ion-col> -->
+      </ion-row>
+    </ion-grid>
+    <ion-button [disabled]="isActive === true ? true : estadoSolicitud === 'Buscando el conductor más cercano...'" (click)="solicitar()" style="width: 175px; margin: 0 auto;" shape="round"
+      expand="full"> Solicitar </ion-button>
+
+
+  </div>
+</div>

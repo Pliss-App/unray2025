@@ -1,0 +1,57 @@
+<ion-grid class="centered-card">
+  <ion-row class="ion-justify-content-center">
+    <ion-col size="12" size-md="6" size-lg="4">
+      <ion-card>
+        <ion-card-header>
+          <p style="text-align: center; font-size: 16pt; font-weight: bolder;"> CREAR CUENTA</p>
+        </ion-card-header>
+        <ion-card-content>
+          <form [formGroup]="registro" (ngSubmit)="onSubmit()">
+            <ion-item class="outlined-input">
+              <ion-input formControlName="nombre" type="text" placeholder="Nombre"></ion-input>
+            </ion-item>
+            <ion-text color="danger" *ngIf="isFieldInvalid('nombre')">
+              Nombre es requerido
+            </ion-text>
+            <ion-item class="outlined-input">
+              <ion-input formControlName="apellido" type="text" placeholder="Apellido"></ion-input>
+            </ion-item>
+            <ion-text color="danger" *ngIf="isFieldInvalid('apellido')">
+              Apellido es requerido.
+            </ion-text>
+
+            <ion-item class="outlined-input">
+              <ion-input formControlName="telefono" type="tel" placeholder="Teléfono"></ion-input>
+            </ion-item>
+            <ion-text color="danger" *ngIf="isFieldInvalid('telefono')">
+              Teléfono es requerido.
+            </ion-text>
+
+            <ion-item class="outlined-input">
+              <ion-input formControlName="correo" type="text" placeholder="Correo"></ion-input>
+            </ion-item>
+            <ion-text color="danger" *ngIf="isFieldInvalid('correo')">
+              Email es requerido y debe ser válido.
+            </ion-text>
+
+            <ion-item class="outlined-input">
+              <ion-input formControlName="password" type="password" placeholder="Contraseña"></ion-input>
+            </ion-item>
+            <ion-text color="danger" *ngIf="isFieldInvalid('password')">
+              La contraseña es requerida y debe tener al menos 6 caracteres.
+            </ion-text>
+
+            <ion-item class="outlined-input">
+              <ion-input formControlName="confirmPassword" type="password" placeholder="Repetir Contraseña"></ion-input>
+            </ion-item>
+            <ion-text color="danger" *ngIf="registro.errors?.['passwordsMismatch'] && registro.get('confirmPassword')?.touched">
+              Las contraseñas no coinciden.
+            </ion-text>
+            <p style="margin-top: 12px; margin-left: 6px;">Ya tengo cuenta! <a href="auth/login">Iniciar Sesión</a></p>
+            <ion-button expand="full" class="ion-margin-top" type="submit">Crear Cuenta</ion-button>
+          </form>
+        </ion-card-content>
+      </ion-card>
+    </ion-col>
+  </ion-row>
+</ion-grid>

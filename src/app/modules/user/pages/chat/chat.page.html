@@ -1,0 +1,34 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-title>Chat</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="closeModal()">
+        <ion-icon style="color: white;" slot="icon-only" name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="chat-content" [scrollEvents]="true" (ionScroll)="onScroll($event)">
+  <div class="contenedor-chat">
+  <div *ngFor="let msg of mensajes" [ngClass]="{'sent': msg.emisor_id === emisorId, 'received': msg.emisor_id !== emisorId}">
+    <div class="message">{{ msg.mensaje }}</div>
+  </div>
+</div>
+</ion-content>
+
+<ion-footer>
+  <ion-item lines="none">
+    <ion-input     style="--padding-start: 10px;" 
+      [(ngModel)]="mensaje" 
+      placeholder="Escribe un mensaje" 
+      clearInput 
+
+      type="text"
+      autofocus
+    ></ion-input>
+    <ion-button [disabled]="!mensaje" (click)="enviarMensaje()" fill="clear">
+      <ion-icon slot="icon-only" name="send"></ion-icon>
+    </ion-button>
+  </ion-item>
+</ion-footer>

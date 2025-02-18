@@ -1,0 +1,46 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <!-- Botón de regreso -->
+      <ion-back-button defaultHref="/" ></ion-back-button>
+    </ion-buttons>
+    <ion-title>Recuperar Contraseña</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div class="container">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>¿Olvidaste tu contraseña?</ion-card-title>
+        <ion-card-subtitle>
+          Ingresa tu correo electrónico para recibir instrucciones de recuperación.
+        </ion-card-subtitle>
+      </ion-card-header>
+
+      <ion-card-content>
+        <form [formGroup]="recoverForm" (ngSubmit)="onSubmit()">
+          <!-- Campo de Correo -->
+          <ion-item lines="full">
+            <ion-label style="padding-bottom: 9px;" position="floating">Correo Electrónico</ion-label>
+            <ion-input 
+              type="email" 
+              formControlName="email" 
+              placeholder="ejemplo@correo.com"
+              >
+            </ion-input>
+          </ion-item>
+          <!-- Mensaje de error -->
+          <ion-text color="danger" *ngIf="recoverForm.get('email')?.invalid && recoverForm.get('email')?.touched">
+            Por favor ingresa un correo válido.
+          </ion-text>
+
+          <!-- Botón Enviar -->
+          <ion-button expand="block" color="primary" type="submit" [disabled]="recoverForm.invalid" style="margin-top: 15px;">
+            Enviar
+          </ion-button>
+        </form>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>

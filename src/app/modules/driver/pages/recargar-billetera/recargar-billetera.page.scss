@@ -1,0 +1,35 @@
+/* src/app/pages/payment-form/payment-form.page.scss */
+.photo-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 200px;
+    border: 1px dashed #ccc;
+    margin: 20px 0;
+    cursor: pointer;
+  }
+  
+  .photo-container img {
+    max-height: 100%;
+    max-width: 100%;
+    border-radius: 10px;
+  }
+  
+  .photo-container ion-icon {
+    font-size: 50px;
+    color: #aaa;
+  }
+  
+
+  .outlined-input {
+    --border-width: 1px;
+  --border-style: solid;
+  --border-color: var(--ion-color-medium); /* Cambia el color si lo deseas */
+  --border-radius: 8px; /* Ajusta el radio del borde según el diseño deseado */
+  --background: transparent; /* Asegúrate de que el fondo sea transparente */
+  padding: 6px; /* Quitar padding interno */
+  }
+
+  .outlined-input ion-input {
+    padding: 12px; /* Ajusta el padding del input */
+  }

@@ -1,0 +1,26 @@
+
+
+<ion-content [fullscreen]="true">
+  <app-map-routing [idSoli]="solicitud.id" [origin]="{ lat: solicitud.start_lat, lng:solicitud.start_lng}"
+  [destination]="{ lat:solicitud.end_lat, lng: solicitud.end_lng}"
+  [waypoints]="[]"
+ [idConductor]="idConductor" *ngIf="idConductor"    class="mapa-viaje"></app-map-routing> 
+
+ <app-viaje-sheet [minHeight]="150" [maxHeight]="500" class="viaje-sheet" 
+ >
+
+ <app-user-driver *ngIf="idConductor" 
+ [idViaje]="solicitud.id" 
+ [estado_viaje]="solicitud.estado_viaje"
+ [rol]="'user'"
+ [idUser]="user.idUser" 
+ [idConductor]="solicitud.idUser" 
+ [pointA]="solicitud.start_direction"
+ [pointB]="solicitud.end_direction"
+ [origin]="{ lat: solicitud.start_lat, lng:solicitud.start_lng}"
+ [destination]="{ lat:solicitud.end_lat, lng: solicitud.end_lng}"
+ [coste]="solicitud.costo"
+ class="user-driver"></app-user-driver> 
+
+</app-viaje-sheet>
+</ion-content>

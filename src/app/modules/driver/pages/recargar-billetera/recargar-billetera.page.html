@@ -1,0 +1,36 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <!-- Botón de regreso -->
+      <ion-back-button defaultHref="/"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Recargar</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <div style="padding-left: 25px; padding-right: 25px;">
+    <p style="padding-left: 10px; padding-right: 10px;">Recarga tu billetera para seguir recibiendo viajes.
+    </p>
+    <p>Link de pago: </p>
+    <ion-button expand="full" (click)="openVisaLink()">Abrir Visa Link</ion-button>
+
+    <form [formGroup]="paymentForm" (ngSubmit)="submitForm()" style="margin-top: 15px;">
+      <p>Completa la siguiente información*</p>
+      <ion-item class="outlined-input">
+        <ion-input placeholder="Número de Boleta" formControlName="receiptNumber" type="text"></ion-input>
+      </ion-item>
+
+      <ion-item class="outlined-input">
+        <ion-input placeholder="Cantidad" formControlName="amount" type="number"></ion-input>
+      </ion-item>
+      <p>Adjunta tu vaucher o boleta de depósito</p>
+      <div class="photo-container" (click)="openPhotoOptions()">
+        <img *ngIf="photoBase64" [src]="photoBase64" />
+        <ion-icon *ngIf="!photoBase64" name="camera" size="large"></ion-icon>
+      </div>
+
+      <ion-button expand="full" type="submit">Enviar</ion-button>
+    </form>
+  </div>
+</ion-content>
