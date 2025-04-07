@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, Input, OnChanges, OnInit, Renderer2, SimpleChanges, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, Input, NgZone, OnChanges, OnInit, Renderer2, SimpleChanges, ViewChild } from '@angular/core';
 import { Gesture, GestureController } from '@ionic/angular';
 import { UserService } from 'src/app/core/services/user.service';
 import { ModalController } from '@ionic/angular';
@@ -12,6 +12,7 @@ import { AuthService } from 'src/app/core/services/auth.service';
 import { SolicitudService } from 'src/app/core/services/solicitud.service';
 import { Subscription } from 'rxjs';
 import { LocationService } from 'src/app/core/services/location.service';
+import { StorageService } from 'src/app/core/services/storage.service';
 
 @Component({
   selector: 'app-bottom-sheet',
@@ -20,11 +21,15 @@ import { LocationService } from 'src/app/core/services/location.service';
 })
 export class BottomSheetComponent implements AfterViewInit, OnChanges {
   @ViewChild('bottomSheet', { read: ElementRef }) bottomSheet!: ElementRef;
+  @ViewChild('contentDiv') contentDiv!: ElementRef;
+  initialHeight: number = 0;
+  private resizeObserver!: ResizeObserver;
+
   estadoSolicitud: string = '';
   conductorSeleccionado: string | null = null;
   minHeight = 100;  // Altura mínima del bottom sheet en píxeles
   maxHeight = window.innerHeight * 0.8;  // Altura máxima del bottom sheet (80% de la pantalla)
-  currentHeight = this.minHeight;
+  currentHeight = 300;
   services: any = [];
   suggestions: string[] = [];
   lat: number = 0;
@@ -44,11 +49,13 @@ export class BottomSheetComponent implements AfterViewInit, OnChanges {
   idUser: any = {};
   private solicitudSubscription: Subscription | undefined;
   respuesta: any;
+  responseSolicitud: any = null;
 
-  constructor(
-    private location: LocationService, 
-    private solicitudService: SolicitudService, private authService: AuthService, 
-    private rango: RangoService, private sharedService: SharedService, 
+  constructor(private ngZone: NgZone,
+    private storage: StorageService,
+    private location: LocationService,
+    private solicitudService: SolicitudService, private authService: AuthService,
+    private rango: RangoService, private sharedService: SharedService,
     public modalController: ModalController, private gestureCtrl: GestureController,
     private renderer: Renderer2, private userService: UserService,
     private service: ServicioService) {
@@ -62,9 +69,23 @@ export class BottomSheetComponent implements AfterViewInit, OnChanges {
       this.solicitud.start_lat = this.lat;
       this.solicitud.start_lng = this.lng;
       this.solicitud.start_direction = this.directionSalida;
-
+      this.solicitud.fecha =   this.obtenerFechaHoraLocal();
+      this.solicitud.hora = this.getCurrentTime;
     })
     this.getServicioCosto();
+  }
+
+  getHeithDiv() {
+    if (this.contentDiv) {
+      this.resizeObserver = new ResizeObserver(entries => {
+        for (let entry of entries) {
+          const newHeight = entry.contentRect.height;
+          document.documentElement.style.setProperty('--dynamic-height', `${newHeight}px`);
+        }
+      });
+
+      this.resizeObserver.observe(this.contentDiv.nativeElement);
+    }
   }
 
   ngAfterViewInit() {
@@ -72,30 +93,34 @@ export class BottomSheetComponent implements AfterViewInit, OnChanges {
     this.initializeGesture();
     this.meDestination();
     this.meDistance();
+    this.getHeithDiv()
   }
 
   async ngOnInit() {
+    await this.checkSolicitudEstado();
     this.positionSalida();
-  // Escuchar si la solicitud expira
+    // Escuchar si la solicitud expira
 
     // Escuchar las respuestas en tiempo real
     this.solicitudSubscription = await this.solicitudService.solicitudRespuesta$.subscribe(
       (respuesta) => {
         this.respuesta = respuesta;
+        this.responseSolicitud = null;
         if (this.respuesta.success == false) {
+          this.responseSolicitud = 'danger';
           this.estadoSolicitud = this.respuesta.message;
-          setTimeout(()=>{
+          setTimeout(() => {
             this.estadoSolicitud = ''
-          },3000)
+          }, 3000)
           //    this.userService.deleteSolicitud(this.respuesta.idSoli)
         } else {
+          this.responseSolicitud = 'success';
           this.estadoSolicitud = this.respuesta.message;
-          setTimeout(()=>{
+          setTimeout(() => {
             this.estadoSolicitud = ''
-          },3000)
+          }, 3000)
         }
 
-        console.log('Respuesta recibida:', respuesta);
       }
     );
   }
@@ -128,12 +153,18 @@ export class BottomSheetComponent implements AfterViewInit, OnChanges {
 
   positionSalida() {
     this.sharedService.currentData.subscribe(async (data) => {
-      //  this.data = data;
       if (data) {
         this.lat = data.lat;
         this.lng = data.lng;
 
-        this.directionSalida = await reverseGeocoding(this.lat, this.lng);
+        //    this.directionSalida = await reverseGeocoding(this.lat, this.lng);
+
+        if (data?.address != '') {
+          this.directionSalida = data.address
+        } else {
+          this.directionSalida = await reverseGeocoding(data.lat, data.lng)
+        }
+
 
         this.solicitud.start_lat = this.lat;
         this.solicitud.start_lng = this.lng;
@@ -226,7 +257,14 @@ export class BottomSheetComponent implements AfterViewInit, OnChanges {
     this.sharedService.medestination.subscribe(async (data) => {
 
       if (data) {
-        this.directionDestino = await reverseGeocoding(data.lat, data.lng);
+
+        if (data?.address != '') {
+          this.directionDestino = data.address
+        } else {
+          this.directionDestino = await reverseGeocoding(data.lat, data.lng)
+        }
+
+        // this.directionDestino = await reverseGeocoding(data.lat, data.lng);
         this.solicitud.end_direction = this.directionDestino;
         this.solicitud.end_lat = data.lat;
         this.solicitud.end_lng = data.lng;
@@ -242,6 +280,8 @@ export class BottomSheetComponent implements AfterViewInit, OnChanges {
 
       if (data) {
         this.distance = data;
+        this.currentHeight = 350;
+        console.log("DATO SF ", this.currentHeight)
         if (this.distance != null) {
           this.bottomSheet.nativeElement.style.height = '39vh';
           this.obtenerCostoViaje(this.distance.distance);
@@ -304,37 +344,20 @@ export class BottomSheetComponent implements AfterViewInit, OnChanges {
 
   solicitar() {
     try {
-      this.estadoSolicitud = 'Buscando el conductor más cercano...';
+      this.sharedService.activeMenuLat(true);
+      this.estadoSolicitud = '';
       this.conductorSeleccionado = null;
       const user: any = this.authService.getUser();
       this.solicitud.idUser = user.idUser;
       this.solicitud.fecha_hora = new Date().toISOString();
-      /*    const solicitud = {
-            idUser: this.idUser.idUser,
-            idConductor: null,
-            idService:this.selectedServiceId ,
-            start_lat: this.,
-            start_lng: '',
-            start_direction: '',
-            end_lat: '',
-            end_lng: '',
-            end_direction: '',
-            distance: '',
-            duration: '',
-            costo: '',
-            fecha_hora: '',
-            estado: ''
-          }*/
 
-      // console.log("Datos solicitud ", this.solicitud);
-
+      this.storage.setItem('solicitudEstado', JSON.stringify({ estado: 'pendiente', solicitud: this.solicitud }))
       this.solicitudService.enviarSolicitudAConductor(
         this.solicitud,
         (estado) => {
           this.estadoSolicitud = estado; // Actualiza el estado en tiempo real
-          setTimeout(()=>{
-            this.estadoSolicitud = ''
-          },3000)
+          this.saveSolicitudRespuesta(estado);
+
         },
         (conductorId) => {
           this.conductorSeleccionado = conductorId; // Conductor que aceptó
@@ -344,5 +367,63 @@ export class BottomSheetComponent implements AfterViewInit, OnChanges {
     } catch (error) {
       console.error("Ocurrio error :", error)
     }
+  }
+
+  async saveSolicitudRespuesta(estado: string) {
+    // Guardar la respuesta de la solicitud en el almacenamiento
+    this.storage.setItem('solicitudEstado', JSON.stringify({ estado, solicitud: this.solicitud }))
+
+    // Limpiar el estado después de un tiempo
+    setTimeout(() => {
+      this.estadoSolicitud = ''
+
+    }, 3000)
+  }
+
+
+  async checkSolicitudEstado() {
+    const storedEstado = await this.storage.getItem('solicitudEstado')
+
+    if (storedEstado.value) {
+      const estadoData = JSON.parse(storedEstado.value);
+      this.estadoSolicitud = estadoData.estado;
+      this.solicitud = estadoData.solicitud;
+
+      // Si la solicitud está pendiente, podrías mostrar un mensaje o hacer algo
+      if (this.estadoSolicitud === 'pendiente') {
+        console.log('La solicitud está pendiente...');
+      } else {
+        console.log('Estado de la solicitud:', this.estadoSolicitud);
+      }
+    }
+  }
+
+
+  obtenerFechaHoraLocal(): string {
+    const now = new Date();
+    return now.getFullYear() + "-" +
+        String(now.getMonth() + 1).padStart(2, "0") + "-" +
+        String(now.getDate()).padStart(2, "0") + " " +
+        String(now.getHours()).padStart(2, "0") + ":" +
+        String(now.getMinutes()).padStart(2, "0") + ":" +
+        String(now.getSeconds()).padStart(2, "0");
+}
+
+  getCurrentDate(): string {
+    const now = new Date();
+    const day = now.getDate().toString().padStart(2, '0'); // Obtiene el día con 2 dígitos
+    const month = (now.getMonth() + 1).toString().padStart(2, '0'); // Obtiene el mes con 2 dígitos
+    const year = now.getFullYear().toString(); // Obtiene el año
+
+    return `${day}${month}${year}`;
+  }
+
+  getCurrentTime(): string {
+    const now = new Date();
+    const hours = now.getHours().toString().padStart(2, '0'); // Horas con 2 dígitos
+    const minutes = now.getMinutes().toString().padStart(2, '0'); // Minutos con 2 dígitos
+    const seconds = now.getSeconds().toString().padStart(2, '0'); // Segundos con 2 dígitos
+
+    return `${hours}${minutes}${seconds}`;
   }
 }

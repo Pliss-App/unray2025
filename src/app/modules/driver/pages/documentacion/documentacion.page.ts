@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Camera, CameraOptions } from '@awesome-cordova-plugins/camera/ngx';
+
+import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { UserService } from 'src/app/core/services/user.service';
 import { AuthService } from 'src/app/core/services/auth.service';
 import { ActionSheetController, AlertController, LoadingController, NavController, ToastController } from '@ionic/angular';
@@ -24,7 +25,7 @@ export class DocumentacionPage implements OnInit {
   user: any = {};
 
   constructor( private navCtrl: NavController,private actionSheetController: ActionSheetController, private alertController: AlertController, private loadingController: LoadingController,
-    private toastController: ToastController, private fb: FormBuilder, private camera: Camera, private userService: UserService, private authService: AuthService) {
+    private toastController: ToastController, private fb: FormBuilder,  private userService: UserService, private authService: AuthService) {
     this.user = this.authService.getUser();
     this.getDocumentacion();
     const controls: { [key: string]: any } = {};
@@ -42,13 +43,13 @@ export class DocumentacionPage implements OnInit {
   }
 
   async getDocumentacion() {
-    const loading = await this.loadingController.create({
+ /*   const loading = await this.loadingController.create({
       message: 'Verificando documentación...',
       spinner: 'crescent',
       duration: 10000, // Tiempo máximo antes de que se cierre el loading
-    });
+    }); */
 
-    await loading.present();
+   // await loading.present();
     try {
       this.userService.getDocumentacionRequisitos().subscribe(async (re: any) => {
         this.fields = re?.result;
@@ -59,7 +60,7 @@ export class DocumentacionPage implements OnInit {
       console.error('Error verificando la documentación:', error);
     } finally {
       // Cierra el loading
-      await loading.dismiss();
+  //    await loading.dismiss();
     }
 
   }
@@ -70,13 +71,13 @@ export class DocumentacionPage implements OnInit {
       buttons: [
         {
           text: 'Tomar Foto',
-          icon: 'camera',
-          handler: () => this.captureImage(fieldName, this.camera.PictureSourceType.CAMERA),
+          icon: 'camera', 
+          handler: () => this.captureImage(fieldName),
         },
         {
           text: 'Elegir de la Galería',
           icon: 'image',
-          handler: () => this.captureImage(fieldName, this.camera.PictureSourceType.PHOTOLIBRARY),
+          handler: () => this.selectImage(fieldName),
         },
         {
           text: 'Cancelar',
@@ -89,26 +90,30 @@ export class DocumentacionPage implements OnInit {
     await actionSheet.present();
   }
 
-  captureImage(fieldName: string, sourceType: number) {
-    const options: CameraOptions = {
-      quality: 80,
-      destinationType: this.camera.DestinationType.DATA_URL,
-      sourceType: sourceType,
-      encodingType: this.camera.EncodingType.JPEG,
-      mediaType: this.camera.MediaType.PICTURE,
-    };
+  async captureImage(fieldName: string) {
+    const image = await Camera.getPhoto({
+      quality: 90,
+      allowEditing: false,
+      resultType: CameraResultType.DataUrl, // Devuelve la imagen en base64
+      source: CameraSource.Camera // Abre la cámara directamente
+    });
+        const base64Image = image.dataUrl;
+        this.previews[fieldName] = image.dataUrl  ?? ''; // Actualizar la previsualización
+        this.imagesBase64[fieldName] = image.dataUrl  ?? ''; // Guardar el Base64
+        this.form.controls[fieldName].setValue(image.dataUrl); // Validar el campo
+  }
 
-    this.camera.getPicture(options).then(
-      (imageData) => {
-        const base64Image = `data:image/jpeg;base64,${imageData}`;
-        this.previews[fieldName] = base64Image; // Actualizar la previsualización
-        this.imagesBase64[fieldName] = imageData; // Guardar el Base64
-        this.form.controls[fieldName].setValue(imageData); // Validar el campo
-      },
-      (err) => {
-        console.error('Error al capturar la imagen:', err);
-      }
-    );
+  async selectImage(fieldName: string) {
+    const image = await Camera.getPhoto({
+      quality: 90,
+      allowEditing: false,
+      resultType: CameraResultType.DataUrl, // Devuelve la imagen en base64
+      source: CameraSource.Photos // Abre la  galeria
+    });
+       // const base64Image = image.dataUrl;
+        this.previews[fieldName] = image.dataUrl  ?? ''; // Actualizar la previsualización
+        this.imagesBase64[fieldName] = image.dataUrl  ?? ''; // Guardar el Base64
+        this.form.controls[fieldName].setValue(image.dataUrl); // Validar el campo
   }
 
   async onSubmit() {

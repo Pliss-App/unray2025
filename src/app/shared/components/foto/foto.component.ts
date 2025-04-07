@@ -1,8 +1,8 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { AuthService } from 'src/app/core/services/auth.service';
 import { UserService } from 'src/app/core/services/user.service';
-import { Camera , CameraOptions } from '@awesome-cordova-plugins/camera/ngx';
-import { ToastController } from '@ionic/angular';
+import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
+import { ActionSheetController, ToastController } from '@ionic/angular';
 
 @Component({
   selector: 'app-foto',
@@ -14,13 +14,13 @@ export class FotoComponent implements OnInit {
   @Input() markers: { lat: number; lon: number; label?: string }[] = [];
   latitude: number | undefined;
   longitude: number | undefined;
+  isFoto: boolean = false;
 
   user: any = null;
   imageBase64: any = null;
-  constructor(
+  constructor(private actionSheetController: ActionSheetController,
     public toastController: ToastController,
     private authService: AuthService,
-    private camera: Camera,
     private currentUser: UserService) {
   }
 
@@ -51,24 +51,74 @@ export class FotoComponent implements OnInit {
     }
   }
 
-  async selectImage() {
-    const options: CameraOptions = {
-      quality: 50,
-      destinationType: this.camera.DestinationType.DATA_URL, // Devuelve Base64
-      encodingType: this.camera.EncodingType.JPEG,
-      mediaType: this.camera.MediaType.PICTURE,
-      sourceType: this.camera.PictureSourceType.PHOTOLIBRARY, // Cambia a CAMERA para tomar foto
-    };
+  async presentActionSheet() {
+    const actionSheet = await this.actionSheetController.create({
+      header: 'Seleccionar una opción',
+      buttons: [
+        {
+          text: 'Tomar Foto',
+          icon: 'camera',
+          handler: () => this.tomarImage(),
+        },
+        {
+          text: 'Elegir de la Galería',
+          icon: 'image',
+          handler: () => this.selectImage(),
+        },
+        {
+          text: 'Cancelar',
+          icon: 'close',
+          role: 'cancel',
+        },
+      ],
+    });
 
-    this.camera.getPicture(options).then(
-      (imageData) => {
-        this.imageBase64 = 'data:image/jpeg;base64,' + imageData; // Guarda la imagen en formato Base64
-        this.updateFoto();
-      },
-      (err) => {
-        console.log("Error al capturar imagen: ", err);
-      }
-    );
+    await actionSheet.present();
+  }
+
+  async tomarImage() {
+    // Solicitar permisos antes de tomar la foto
+    const permission = await Camera.requestPermissions();
+
+    if (permission.camera !== 'granted') {
+      console.error('Permiso de cámara denegado');
+      return;
+    }
+    const image = await Camera.getPhoto({
+      quality: 90,
+      allowEditing: false,
+      resultType: CameraResultType.Base64, // Puedes cambiar a Uri si prefieres una URL en vez de Base64
+      source: CameraSource.Camera,  // Cambia a CAMERA para tomar foto
+    });
+
+
+    this.imageBase64 = `data:image/jpeg;base64,${image.base64String}`;
+    this.isFoto = true;
+
+    this.updateFoto();
+  }
+
+
+  async selectImage() {
+    // Solicitar permisos antes de tomar la foto
+    const permission = await Camera.requestPermissions();
+
+    if (permission.camera !== 'granted') {
+      console.error('Permiso de cámara denegado');
+      return;
+    }
+    const image = await Camera.getPhoto({
+      quality: 90,
+      allowEditing: false,
+      resultType: CameraResultType.Base64, // Puedes cambiar a Uri si prefieres una URL en vez de Base64
+      source: CameraSource.Photos,  // Cambia a CAMERA para tomar foto
+    });
+
+
+    this.imageBase64 = `data:image/jpeg;base64,${image.base64String}`;
+    this.isFoto = true;
+
+    this.updateFoto();
   }
 
   async updateFoto() {
@@ -82,6 +132,7 @@ export class FotoComponent implements OnInit {
         this.getFoto()
         this.popUp();
         this.authService.refreshLogin(re);
+        this.isFoto = false;
       })
     } catch (error) {
       console.log(error)

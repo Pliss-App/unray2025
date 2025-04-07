@@ -6,10 +6,10 @@ import { SharedService } from 'src/app/core/services/shared.service';
 import { SolicitudService } from 'src/app/core/services/solicitud.service';
 import { OnesignalService } from 'src/app/core/services/onesignal.service';
 import { LocationService } from 'src/app/core/services/location.service';
-import { Geolocation } from '@awesome-cordova-plugins/geolocation/ngx';
 import { WebSocketService } from 'src/app/core/services/web-socket.service';
 import { CalificacionComponent } from 'src/app/shared/components/calificacion/calificacion.component';
 import { UserService } from 'src/app/core/services/user.service';
+import { Geolocation } from '@capacitor/geolocation';
 
 @Component({
   selector: 'app-home',
@@ -20,24 +20,42 @@ export class HomePage implements OnInit {
   userRole: any;
   message: string = '';
   user: any = null;
-  interSoli: any= null;
+  interSoli: any = null;
+  idViaje: any= null;
+  isActiveMenu: boolean = false;
 
   constructor(private onesignal: OnesignalService, private alertController: AlertController,
     private sharedDataService: SharedService, private soli: SolicitudService, private socketService: WebSocketService,
-    private router: Router, private location: LocationService, private geolocation: Geolocation,
+    private router: Router, private location: LocationService,
     private auth: AuthService, private userService: UserService, private modalController: ModalController, private menuController: MenuController) {
     this.userRole = this.auth.getRole();
     this.user = this.auth.getUser();
-    this.onesignal.initialize(this.userRole, this.user.idUser);
+
+    this.sharedDataService.menu.subscribe((re) => {
+      this.isActiveMenu = re;
+    });
   }
 
   async ngOnInit() {
+    this.onesignal.initialize(this.userRole, this.user.idUser);
+    this.getSolicitudCreada();
     //this.soli.startPolling();
     this.escucharSolicitud();
     this.getCalificar();
 
-    await this.getEstadoCalificacion()
+    await this.getEstadoCalificacion();
 
+  }
+
+  getSolicitudCreada(){
+    this.socketService.listen('solicitud_creada', async (data: any) => {
+      if (data.estado == true) {
+
+        this.idViaje = data. solicitudId;
+        //this.mostrarModalCalificacion(data.idUser, data.idViaje);
+      }
+
+    })
   }
 
 
@@ -57,12 +75,12 @@ export class HomePage implements OnInit {
   }
 
   getNotCalificacion() {
-    this.userService.getNoCalificacionUsuario(this.user.idUser, 'user').subscribe((response) => {
+    this.userService.getNoCalificacion(this.user.idUser).subscribe((response) => {
       if (response.success == true) {
         var data = response.result;
         this.mostrarModalCalificacion(data[0].idConductor, data[0].id);
         clearInterval(this.interSoli);
-        this.interSoli=null;
+        this.interSoli = null;
       }
     })
   }
@@ -77,11 +95,8 @@ export class HomePage implements OnInit {
 
   escucharSolicitud() {
     this.socketService.listen('solicitud_iniciar', async (data: any) => {
-      //this.router.navigate(['/user/travel-route']);
-      console.log("ESCUAHR CUSNCO SE ACEPTA LA SOLICITUD ", data)
-    }
-    )
-
+      this.router.navigate(['/user/travel-route']); // Ajusta la ruta según tu aplicación
+    })
   }
 
   goToProfile() {
@@ -94,32 +109,17 @@ export class HomePage implements OnInit {
   }
 
   async locate() {
-    /*
-    this.location.location$.subscribe(coords => {
-      this.sharedDataService.locate({ lat: coords.lat, lng: coords.lon });
-    }) */
+    const coordinates = await Geolocation.getCurrentPosition();
+    const coords = {
+      lat: coordinates.coords.latitude, lon: coordinates.coords.longitude,
+      heading: coordinates.coords.heading
+    };
 
-    this.geolocation.getCurrentPosition({
-      enableHighAccuracy: true, // Asegura mejor precisión
-      timeout: 10000, // Tiempo máximo de espera (10s)
-      maximumAge: 0, // No usar caché
-    }).then((position) => {
+    const data = { lat: coordinates.coords.latitude, lng: coordinates.coords.longitude, direction: 'salida', address: '' };
 
-      const coords = {
-        lat: position.coords.latitude, lon: position.coords.longitude,
-        heading: position.coords.heading
-      };
+    //   this.showAlert('📍 Ubicación obtenida', `Lat: ${coords.lat}, Lng: ${coords.lon}`);
+    this.sharedDataService.setData(data);
 
-   //   this.showAlert('📍 Ubicación obtenida', `Lat: ${coords.lat}, Lng: ${coords.lon}`);
-      this.sharedDataService.locate({ lat: coords.lat, lng: coords.lon });
-
-    },
-      (error) => {
-        console.error('Error obteniendo ubicación:', error);
-        this.showAlert('❌ Error obteniendo ubicación', error.message);
-      },
-
-    );
   }
 
   async showAlert(title: string, message: string) {
@@ -141,6 +141,7 @@ export class HomePage implements OnInit {
         idViaje: idViaje,
         rol: 'user'
       },
+      cssClass: 'small-modal', 
       backdropDismiss: false // Evita que el usuario cierre el modal sin calificar
     });
     await modal.present();
@@ -148,7 +149,7 @@ export class HomePage implements OnInit {
 
     // Capturar el valor devuelto desde el modal
     const { data } = await modal.onDidDismiss();
-    if (data.calificado == true) {
+    if (data.califico == true) {
       await this.getEstadoCalificacion()
     }
   }
@@ -158,13 +159,20 @@ export class HomePage implements OnInit {
   }
 
 
+  cancelarViaje(){
+    this.socketService.emit(`respuesta_solicitud`, { estado: 'Cancelado', solicitudId:this.idViaje, conductorId: this.user.idUser, idUser: this.user.idUser });
+     
+  }
+
   onSearch() {
 
 
     this.location.getAutocompleteSuggestions('Plaza Madero GUATEMALA').subscribe((response: any) => {
-     console.log(" viende data ", response.results);
+      console.log(" viende data ", response.results);
     });
   }
 
-
+  notification() {
+    this.router.navigate(['/user/notificaciones']);
+  }
 }

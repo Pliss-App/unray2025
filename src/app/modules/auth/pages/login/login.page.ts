@@ -40,13 +40,14 @@ export class LoginPage implements OnInit {
 
     await loading.present();
     setTimeout(async () => {
-      await loading.dismiss(); // Ocultar el loading
+   
     if (this.credenciales.valid) {
       try {
        const credenciales = this.credenciales.value;
         const response = await this.auth.login(credenciales);
-        response.subscribe((re) => {
-          console.log("DAOTO ", re)
+        response.subscribe(async (re) => {
+         // console.log("DAOTO ", re);
+          await loading.dismiss(); // Ocultar el loading
           this.clearForm();
           const userRole = this.auth.getRole();
           if (userRole === 'usuario') {
@@ -54,7 +55,6 @@ export class LoginPage implements OnInit {
           } else if (userRole === 'driver') {
             this.router.navigate(['/driver/home']);
           }
-      
         })
       } catch (error) {
         console.error("Error ", error)
@@ -62,7 +62,7 @@ export class LoginPage implements OnInit {
     } else {
       this.credenciales.markAllAsTouched(); // Marca todos los campos como tocados para mostrar errores
     }
-  }, 3000); 
+  }, 1000); 
   }
 
   clearForm() {
@@ -76,6 +76,10 @@ export class LoginPage implements OnInit {
     this.router.navigate(['/auth/recuperar-contrasenia']); 
   }}
 
+  passwordType: string = 'password';
 
+  togglePasswordVisibility() {
+    this.passwordType = this.passwordType === 'password' ? 'text' : 'password';
+  }
 
 }

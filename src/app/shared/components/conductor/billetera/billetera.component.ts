@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from 'src/app/core/services/auth.service';
-import { UserService } from 'src/app/core/services/user.service';
+import { ConductorService } from 'src/app/core/services/conductor.service';
 
 @Component({
   selector: 'app-billetera',
@@ -10,24 +10,33 @@ import { UserService } from 'src/app/core/services/user.service';
 })
 export class BilleteraComponent implements OnInit {
   user: any = {}
-  saldo: number = 0;
+  saldo: any = null;
   isLoading = false;
-
-  constructor(private api: UserService, private auth: AuthService, private router: Router) {
+  fecha: any= null;
+  
+  constructor(private api: ConductorService , private auth: AuthService, private router: Router) {
     this.user = this.auth.getUser();
+    this.fecha =this. getCurrentDate(); 
   }
 
   ngOnInit() {
-    this.getSaldo();
+    this.getGanancias();
+  //  this.getConsulta();
   }
 
-  getSaldo() {
+  getConsulta(){
+    setInterval(() => {
+      this.getGanancias();
+    }, 60000);
+  }
+
+  getGanancias() {
     this.isLoading = true;
     try {
-      this.api.getSaldo(this.user.idUser).subscribe((re) => {
+      this.api.gananciasDriver(this.user.idUser, this.fecha).subscribe((re) => {
         if (re.result) {
-          const data = re.result;
-          this.saldo = data.saldo;
+          let data = re.result;
+          this.saldo = data?.ganancia;
           this.isLoading = false;
         }
       })
@@ -37,6 +46,14 @@ export class BilleteraComponent implements OnInit {
     }
   }
 
+  getCurrentDate(): string {
+    const now = new Date();
+    const day = now.getDate().toString().padStart(2, '0'); // Obtiene el día con 2 dígitos
+    const month = (now.getMonth() + 1).toString().padStart(2, '0'); // Obtiene el mes con 2 dígitos
+    const year = now.getFullYear().toString(); // Obtiene el año
+  
+    return `${day}${month}${year}`;
+  }
 
   recargar() {
     this.router.navigate(['/driver/recargar']); // Navegar a la página de perfil

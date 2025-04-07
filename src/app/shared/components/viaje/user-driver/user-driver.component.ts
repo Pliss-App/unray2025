@@ -1,20 +1,29 @@
 import { Component, Input, OnInit } from '@angular/core';
+import { Capacitor } from '@capacitor/core';
 import { Router } from '@angular/router';
+import { Platform } from '@ionic/angular';
+import { App } from '@capacitor/app';
 import { Route } from '@tomtom-international/web-sdk-services';
 import { AuthService } from 'src/app/core/services/auth.service';
 import { UserService } from 'src/app/core/services/user.service';
-import { CallNumber } from '@awesome-cordova-plugins/call-number/ngx';
+import { CallNumber } from 'capacitor-call-number';
+import { ActionSheetController } from '@ionic/angular';
 import { ModalController } from '@ionic/angular';
 import { ChatPage } from 'src/app/modules/user/pages/chat/chat.page';
 import { SharedService } from 'src/app/core/services/shared.service';
 import { HttpClient } from '@angular/common/http';
 import { async } from 'rxjs';
+import { Haptics, ImpactStyle } from '@capacitor/haptics';
 import { LaunchNavigator, LaunchNavigatorOptions } from '@awesome-cordova-plugins/launch-navigator/ngx';
 import { AlertController } from '@ionic/angular';
-import { Vibration } from '@awesome-cordova-plugins/vibration/ngx';
+//import { Vibration } from 'cordova-plugin-vibration';
 import { OnesignalService } from 'src/app/core/services/onesignal.service';
 import { CalificacionComponent } from '../../calificacion/calificacion.component';
 import { WebSocketService } from 'src/app/core/services/web-socket.service';
+
+import { Browser } from '@capacitor/browser';
+import { StorageService } from 'src/app/core/services/storage.service';
+declare var navigator: any;
 
 @Component({
   selector: 'app-user-driver',
@@ -23,6 +32,7 @@ import { WebSocketService } from 'src/app/core/services/web-socket.service';
 })
 export class UserDriverComponent implements OnInit {
   @Input() idUser: string | null = null;
+
   @Input() rol: string | null = null;
   @Input() idConductor: string | null = null;
   @Input() idViaje: string | null = null;
@@ -32,40 +42,69 @@ export class UserDriverComponent implements OnInit {
   @Input() pointB: string | null = null;
   @Input() coste: string | null = null;
   @Input() estado_viaje: string | null = null;
+  selectedPaymentMethod: string = 'efectivo'; // Efectivo seleccionado por defecto
   vibrando: boolean = false; // Controla si está vibrando
   idTokenOne: any;
   intervalId: any;
+  vibracionInterval: any;
   profile: any = {};
   tiempo: any = undefined;
+  distancia: any = undefined;
   user: any;
   btnLlegue: boolean = true;
   activeAlerta: boolean = false;
   isPopupOpen: boolean = false;
   options = [];
+  mensajeNavegacion: any = ''
+  updateStatus: any = '';
 
   // URL del placeholder
   placeholderImage: string = 'assets/img/profile.jpg';
-  constructor(private http: HttpClient, private vibration: Vibration,
+  constructor(private http: HttpClient, private actionSheetController: ActionSheetController,
     private shared: SharedService, private alertController: AlertController,
-    private modalController: ModalController,
+    private modalController: ModalController, private platform: Platform,
     private onesignal: OnesignalService, private socketService: WebSocketService,
-    private api: UserService, private auth: AuthService,
-    private route: Router, private callNumber: CallNumber, private launchNavigator: LaunchNavigator) {
+    private api: UserService, private auth: AuthService, private storageService: StorageService,
+    private route: Router, private launchNavigator: LaunchNavigator) {
     this.user = this.auth.getUser();
 
   }
 
-  async ngOnInit() {
-    await this.getAlertaLlego();
-    await this.getCalificar();
-    await this.getPerfilUsuario();
-    await this.shared.time.subscribe(param => {
-      this.tiempo = param;
+  ngOnInit() {
+    this.getUpdateEstado();
+    this.getPerfilUsuario();
+    this.getAlertaLlego();
+    this.getToken();
+   // this.getCalificar();
+    this.shared.time.subscribe(param => {
+      this.tiempo = param?.tiempo;
+      this.distancia = param?.distancia;
     });
     this.verificarEstadoViaje();
-    await this.getMotivosCancelacion();
+    this.getMotivosCancelacion();
+  }
 
-
+  getUpdateEstado() {
+    let time = setInterval(() => {
+      this.estado_viaje = this.estado_viaje;
+      //   console.log("Estado #", this.estado_viaje)
+      if (this.estado_viaje == 'Pendiente de Iniciar') {
+        this.updateStatus = 'En Ruta a Pasajero';
+        this.mensajeNavegacion = 'Navegar a ' + this.profile.nombre
+      } else {
+        if (this.estado_viaje == 'En Ruta a Pasajero') {
+          this.updateStatus = 'En Ruta a Pasajero';
+          this.mensajeNavegacion = 'Seguir navegando';
+          this.btnLlegue = false;
+        } else if (this.estado_viaje == 'Conductor Llego a Salida' || this.estado_viaje == 'Usuario Va en Camino') {
+          this.updateStatus = 'En Ruta a Destino';
+          this.mensajeNavegacion = 'Navegar a Destino'
+        } else if (this.estado_viaje == 'En Ruta a Destino') {
+          this.updateStatus = 'En Ruta a Destino';
+          this.mensajeNavegacion = 'Seguir navegando';
+        }
+      }
+    }, 1000);
   }
 
   getAlertaLlego() {
@@ -86,7 +125,6 @@ export class UserDriverComponent implements OnInit {
       if (data.estado == true) {
         this.mostrarModalCalificacion();
       }
-
     })
   }
 
@@ -102,22 +140,23 @@ export class UserDriverComponent implements OnInit {
 
   }
 
-  getPerfilUsuario() {
-    this.profile.foto = this.placeholderImage;
+  async getToken() {
     this.onesignal.getToken(this.idConductor).subscribe((resp => {
       var data = resp.result;
       var token = data.onesignal_token;
       this.idTokenOne = token;
 
     }))
+  }
+
+  async getPerfilUsuario() {
+    this.profile.foto = this.placeholderImage;
     if (this.rol == 'conductor') {
-
-
       if (this.idConductor != null) {
-
-        this.api.getDriverProfile(this.idConductor).subscribe((re) => {
+        await this.api.getDriverProfile(this.idConductor).subscribe((re) => {
           if (re.success) {
             this.profile = re?.result;
+
             if (!this.profile.foto) {
               this.profile.foto = this.placeholderImage;
             }
@@ -126,9 +165,8 @@ export class UserDriverComponent implements OnInit {
       }
 
     } else {
-      const id: any = this.auth.getUser();
       if (this.idConductor != null) {
-        this.api.getUserProfileDriver(this.idConductor).subscribe((re) => {
+        await this.api.getUserProfileDriver(this.idConductor).subscribe((re) => {
           if (re.success) {
             this.profile = re?.result;
             if (!this.profile.foto) {
@@ -150,6 +188,20 @@ export class UserDriverComponent implements OnInit {
         solicitudId: idSoli
       }
       this.api.updateEstadoViaje({ data }).subscribe((resp) => {
+
+        var data = {
+          userId: this.idTokenOne,
+          sonido: 'vacio',
+          title: 'Viaje - Conductor',
+          message: item == 'En Ruta a Usuario' ? 'El viaje se ha iniciado, esperemos todo salga bien.' : 'Ya esta tu Driver Ray esperandote. No tardes.',
+          fecha: this.obtenerFechaHoraLocal(),
+          idUser : this.idConductor
+        }
+        this.onesignal.enviarNotificacion(data).subscribe((re) => {
+          console.log("Notificado");
+          return 0;
+        });
+
         return 0;
       })
     } catch (error) {
@@ -159,10 +211,15 @@ export class UserDriverComponent implements OnInit {
   }
 
 
-  makeCall(phoneNumber: string) {
-    this.callNumber.callNumber(phoneNumber, true)
-      .then(() => console.log('Llamada realizada correctamente'))
-      .catch((error) => console.error('Error al intentar realizar la llamada:', error));
+  async makeCall(phoneNumber: string) {
+
+    try {
+      // Intentar realizar la llamada directamente
+      await CallNumber.call({ number: phoneNumber, bypassAppChooser: false });
+      console.log('Llamada iniciada');
+    } catch (error) {
+      console.error('Error al realizar la llamada', error);
+    }
 
   }
 
@@ -170,6 +227,7 @@ export class UserDriverComponent implements OnInit {
     const modal = await this.modalController.create({
       component: ChatPage,
       componentProps: {
+        idViaje: this.idViaje,
         emisorId: this.idUser, // Cambiar dinámicamente
         receptorId: this.idConductor, // Cambiar dinámicamente
       },
@@ -177,37 +235,43 @@ export class UserDriverComponent implements OnInit {
     await modal.present();
   }
 
-  openNavigator() {
+  iniciarViaje(estado: any, idConductor: any, idViaje: any) {
+
+    this.updateEstadoViaje(estado, idConductor, idViaje);
+    this.openGoogleMapsWithCoordinates();
+  }
+
+  openGoogleMapsWithCoordinates() {
     var destination: any;
-    if (this.estado_viaje == 'En Ruta a Salida') {
+    if (this.estado_viaje == 'Pendiente de Iniciar' || this.estado_viaje == 'En Ruta a Pasajero') {
       var data = {
         userId: this.idTokenOne,
         sonido: 'vacio',
-        title: 'Un Ray - Llego',
-        message: `${this.profile.nombre}, acaba de llegar por ti.`
+        title: 'Viaje - Iniciado',
+        message: `${this.profile.nombre},  tu driver va en camino.`,
+        fecha: this.obtenerFechaHoraLocal(),
+        idUser : this.idConductor
       }
       this.onesignal.enviarNotificacion(data).subscribe((re) => {
-        var val = re;
+        return 0;
       });
       destination = `${this.origin.lat}, ${this.origin.lng}`;
     }
 
-
-
-
-    if (this.estado_viaje == 'En Ruta a Destino' || this.estado_viaje == 'Conductor Llego a Salida' || this.estado_viaje == 'Conductor en Ruta a Destino' || this.estado_viaje == 'Usuario Va en Camino') {
+    if (this.estado_viaje == 'Conductor Llego a Salida' || this.estado_viaje == 'En Ruta a Destino' || this.estado_viaje == 'Usuario Va en Camino') {
       destination = `${this.destination.lat}, ${this.destination.lng}`;
-      var data = {
+      var noti = {
         userId: this.idTokenOne,
         sonido: 'vacio',
-        title: 'Un Ray - A Destino',
-        message: `Tu viaje a iniciado a tu destino.`
+        title: 'Viaje - A Destino',
+        message: `Esperamos que todo vaya bien en tu viaje.`,
+        fecha: this.obtenerFechaHoraLocal(),
+        idUser : this.idConductor
       }
-      this.onesignal.enviarNotificacion(data).subscribe((re) => {
-        var val = re;
+      this.onesignal.enviarNotificacion(noti).subscribe((re) => {
+        console.log("Notificado")
       });
     }
-    // const destination = "40.730610, -73.935242"; // Coordenadas de destino (Lat, Lng)
 
     const options: LaunchNavigatorOptions = {
       app: this.launchNavigator.APP.USER_SELECT // Cambia a TOMTOM, APPLE_MAPS, etc.
@@ -219,13 +283,11 @@ export class UserDriverComponent implements OnInit {
   }
 
   activeBtnLlegue() {
-    if (this.estado_viaje == 'En Ruta a Salida') {
+    if (this.estado_viaje == 'En Ruta a Pasajero') {
       this.btnLlegue = false;
-
     } else {
       this.btnLlegue = true;
     }
-
     return 0;
   }
 
@@ -233,7 +295,6 @@ export class UserDriverComponent implements OnInit {
     this.isPopupOpen = true;
     // this.shared.actionPopUp(true);//
   }
-
 
   handleClose() {
     this.isPopupOpen = false;
@@ -250,66 +311,67 @@ export class UserDriverComponent implements OnInit {
           var data = {
             userId: this.idTokenOne,
             sonido: 'vacio',
-            title: 'Un Ray - Cancelación',
-            message: `${this.profile.nombre}, acaba de cancelar la solicitud.`
+            title: 'Viaje - Cancelado',
+            message: `${this.profile.nombre}, acaba de cancelar la solicitud.`,
+            fecha: this.obtenerFechaHoraLocal(),
+            idUser : this.idConductor
           }
           this.onesignal.enviarNotificacion(data).subscribe((re) => {
             var val = re;
           });
-
         }
       })
     } catch (error) {
 
     }
-    // Guardar en la base de datos a través del backend
-    /*   this.http.post('http://localhost:3000/api/guardar', { opcion: selectedOption }).subscribe(
-         (response) => {
-           console.log('Guardado exitoso:', response);
-         },
-         (error) => {
-           console.error('Error al guardar:', error);
-         }
-       ); */
   }
 
   async finalizar() {
     const alert = await this.alertController.create({
-      header: 'Confirmar',
+      header: 'Finalizar Viaje',
       message: '¿Estás seguro de que deseas finalizar el viaje?',
+      mode: 'ios', // Cambia el estilo según la plataforma (ios/md)
+      cssClass: 'custom-alert',
+
       buttons: [
         {
           text: 'Cancelar',
           role: 'cancel',
-          cssClass: 'secondary',
+          cssClass: 'cancel-button',
           handler: () => {
             console.log('Cancelación del viaje cancelada');
           }
         },
         {
           text: 'Finalizar',
+          cssClass: 'finish-button',
           handler: () => {
             // Llamada al servicio para finalizar el viaje
             var data = {
               idViaje: this.idViaje,
               idUser: this.user.idUser,
-              idDriver :  this.user.idUser,
-              costo: this.coste
+              idUserViaje: this.idConductor,
+              idDriver: this.user.idUser,
+              costo: this.coste,
+              fecha: this.getCurrentDate(),
+              hora: this.getCurrentTime()
             }
             this.api.finalizarViaje(data).subscribe(
               (resp) => {
-
+                this.storageService.removeItem('sms-definido')
                 var data = {
                   userId: this.idTokenOne,
                   sonido: 'vacio',
-                  title: 'Un Ray - Finalizado',
-                  message: `Viaje a sido finalizado.`
+                  title: 'Viaje - Finalizado',
+                  message: `Viaje a sido finalizado. Esperamos que todo haya ido bien.`,
+                  fecha: this.obtenerFechaHoraLocal(),
+                  idUser : this.idConductor
                 }
                 this.onesignal.enviarNotificacion(data).subscribe((re) => {
                   var val = re;
                 });
-
-                this.mostrarModalCalificacion();
+                window.location.reload();
+                //this.mostrarModalCalificacion();
               },
               (error) => {
                 console.error("Error al finalizar el viaje", error);
@@ -319,7 +381,6 @@ export class UserDriverComponent implements OnInit {
         }
       ]
     });
-
     await alert.present();
   }
 
@@ -336,18 +397,43 @@ export class UserDriverComponent implements OnInit {
     }, 2500); // Verifica cada 1 segundo
   }
 
-  iniciarVibracion() {
+  async iniciarVibracion() {
+    /*  this.vibrando = true;
+      this.vibration.vibrate([1000, 500, 1000]); // Vibra 1s, pausa 0.5s, vibra 1s
+   */
     this.vibrando = true;
-    this.vibration.vibrate([1000, 500, 1000]); // Vibra 1s, pausa 0.5s, vibra 1s
+    // navigator.vibrate([1000, 500, 1000]);
+
+    // Continuar vibrando mientras isVibrating sea true
+    this.vibracionInterval = setInterval(async () => {
+      if (this.vibrando) {
+        await Haptics.impact({ style: ImpactStyle.Heavy });
+        this.playNotificationSound();
+      } else {
+        clearInterval(this.vibracionInterval); // Detener la vibración cuando isVibrating es false
+      }
+    }, 1500); // Intervalo de 500ms entre vibraciones
+
+    await Haptics.impact({ style: ImpactStyle.Heavy });
   }
 
-  detenerVibracion() {
 
+
+  /*detenerVibracion() {
     this.vibrando = false;
-    this.vibration.vibrate(0); // Detiene la vibración
+    navigator.vibrate(0); // Detiene la vibración
     if (this.intervalId) {
       clearInterval(this.intervalId);
     }
+  }*/
+
+  // Detener vibración
+  detenerVibracion() {
+    this.vibrando = false; // Cambiar la condición a false
+  }
+
+  playNotificationSound() {
+    const audio = new Audio('assets/sound/notificacion.mp3');
   }
 
   atenderNoti() {
@@ -361,6 +447,19 @@ export class UserDriverComponent implements OnInit {
         this.detenerVibracion();
       });
 
+      var noti = {
+        userId: this.idTokenOne,
+        sonido: 'vacio',
+        title: 'Viaje - Usuario',
+        message: `${this.user.nombre}, ya va hacia ti.`,
+        fecha: this.obtenerFechaHoraLocal(),
+        idUser : this.idConductor
+      }
+
+      const response = this.onesignal.enviarNotificacion(noti);
+      response.subscribe((resp) => {
+        return 0;
+      })
     } catch (error) {
       console.error(error)
     }
@@ -385,6 +484,78 @@ export class UserDriverComponent implements OnInit {
       backdropDismiss: false // Evita que el usuario cierre el modal sin calificar
     });
     await modal.present();
+  }
+
+
+
+  // Método para abrir el action sheet
+  async callSeguridad() {
+    const actionSheet = await this.actionSheetController.create({
+      header: 'Emergencia',  // Título del action sheet
+      buttons: [
+        {
+          text: 'Llamar a la policía',
+          icon: 'call',
+          handler: () => {
+            // Lógica para llamar a la policía (puedes usar `makeCall` o cualquier otra acción)
+            this.makeCallSeguridad('911');  // Por ejemplo, llamar al 911
+          }
+        },
+        {
+          text: 'Llamar a bomberos',
+          icon: 'call',
+          handler: () => {
+            // Lógica para llamar a los bomberos
+            this.makeCallSeguridad('112');  // Número ficticio, reemplázalo con el número real
+          }
+        },
+        {
+          text: 'Cancelar',
+          icon: 'close',
+          role: 'cancel',
+          handler: () => {
+            console.log('Acción cancelada');
+          }
+        }
+      ]
+    });
+
+    await actionSheet.present();
+  }
+
+  // Método para hacer la llamada (lo puedes personalizar según el número)
+  makeCallSeguridad(phoneNumber: string) {
+    console.log(`Llamando al número: ${phoneNumber}`);
+    // Aquí usarías algo como `window.open('tel:' + phoneNumber)` para realizar la llamada en una app móvil
+    window.open(`tel:${phoneNumber}`, '_system');
+  }
+
+  getCurrentDate(): string {
+    const now = new Date();
+    const day = now.getDate().toString().padStart(2, '0'); // Obtiene el día con 2 dígitos
+    const month = (now.getMonth() + 1).toString().padStart(2, '0'); // Obtiene el mes con 2 dígitos
+    const year = now.getFullYear().toString(); // Obtiene el año
+
+    return `${day}${month}${year}`;
+  }
+
+  getCurrentTime(): string {
+    const now = new Date();
+    const hours = now.getHours().toString().padStart(2, '0'); // Horas con 2 dígitos
+    const minutes = now.getMinutes().toString().padStart(2, '0'); // Minutos con 2 dígitos
+    const seconds = now.getSeconds().toString().padStart(2, '0'); // Segundos con 2 dígitos
+
+    return `${hours}${minutes}${seconds}`;
+  }
+
+  obtenerFechaHoraLocal(): string {
+    const now = new Date();
+    return now.getFullYear() + "-" +
+      String(now.getMonth() + 1).padStart(2, "0") + "-" +
+      String(now.getDate()).padStart(2, "0") + " " +
+      String(now.getHours()).padStart(2, "0") + ":" +
+      String(now.getMinutes()).padStart(2, "0") + ":" +
+      String(now.getSeconds()).padStart(2, "0");
   }
 
   ngOnDestroy() {

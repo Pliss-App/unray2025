@@ -1,9 +1,12 @@
-import { ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
-import * as tt from '@tomtom-international/web-sdk-maps';
+import { ChangeDetectorRef, Component, ElementRef, Input, OnChanges, OnInit, SimpleChanges, ViewChild } from '@angular/core';
 import { SharedService } from 'src/app/core/services/shared.service';
-import * as ttServices from '@tomtom-international/web-sdk-services';
 import { UserService } from 'src/app/core/services/user.service';
 import { LocationService } from 'src/app/core/services/location.service';
+import { AuthService } from 'src/app/core/services/auth.service';
+import { Capacitor } from '@capacitor/core';
+import { IMAGES } from '../../../constaints/image-data';  // Importar la imagen
+
+declare var google: any;
 
 
 @Component({
@@ -11,10 +14,13 @@ import { LocationService } from 'src/app/core/services/location.service';
   templateUrl: './map-routing.component.html',
   styleUrls: ['./map-routing.component.scss'],
 })
-export class MapRoutingComponent implements OnInit {
+export class MapRoutingComponent implements OnInit, OnChanges  {
+  @ViewChild('mapRouting', { static: false }) mapElement!: ElementRef;
+  @Input() height!: string; // Recibe la altura dinámica
   @Input() idConductor: string | null = null;
   @Input() origin!: { lat: number; lng: number }; // Coordenadas de salida
   @Input() destination!: { lat: number; lng: number }; // Coordenadas de destino
+  @Input() estado_viaje: string | null = null;
   @Input() waypoints: { lat: number; lng: number }[] = []; // Puntos intermedios opcionales
   @Input() idSoli: string | undefined; // Puntos intermedios opcionales
   previousCoords: { lon: number, lat: number } | null = null;
@@ -22,101 +28,180 @@ export class MapRoutingComponent implements OnInit {
   longitude: number | undefined;
   map: any;
   marker: any;
-  estados: any = null;
+  markerSalida: any;
+  rol: any;
+  private lastDriverPosition: google.maps.LatLng | null = null;
   currentMarker: any;
   iconDriver: any = null;
   coordeDriver: any;
-  tipoPunto: any;
+  tipoPunto: any = null;
+  mensajeNavegacion: any = '';
   tiempo: number = 0;
   intervalEstadoId: any;
+  mapHeight: number = window.innerHeight; // Iniciar con la altura de la pantalla
   intervalLocationId: any;
+  directionsServiceUserCli = new google.maps.DirectionsService();
+  directionsDisplayUserCli = new google.maps.DirectionsRenderer({
+    suppressMarkers: true, //Eliminanlos Marcadores
+    polylineOptions: {
+      strokeColor: 'rgb(59, 59, 59)', // Color de la línea
+      strokeOpacity: 1.0, // Opacidad total
+      strokeWeight: 8// Ancho de la línea (ajustar según necesidad)
+    }
+  });
+  lastPosition: google.maps.LatLng | null = null;
+  user: any = {};
 
-  constructor(private locationService: LocationService,
+  constructor(private location: LocationService,
     private cdRef: ChangeDetectorRef,
     private shared: SharedService,
+    private auth: AuthService,
     private sharedDataService: SharedService,
     private uSer: UserService) {
+    this.rol = this.auth.getRole();
+    this.user = this.auth.getUser();
   }
 
-  ngOnInit() {
-    this.initializeMap();
-    this.cdRef.detectChanges();
-    /*  setTimeout(() => {
-        
-       
-      }, 500); */
+  async ngOnInit() {
+    await this.getEstadoViajeActual();
+    await this.initializeMap();
+
+    await this.activarRuteo();
+    //this.cdRef.detectChanges();
     this.meLocation();
+    this.resizeMap() ;
   }
 
-  ionViewDidEnter() {
-    setTimeout(() => {
-      this.map.resize();
-    }, 500);
-  }
-
-
-  initializeMap() {
-    this.map = tt.map({
-      key: 'yhGwpc1KP3yK4Pqb7KZXjJD91wf3aTy9',    // Reemplaza con tu clave de API de TomTom
-      container: 'map-routing',                    // ID del contenedor del mapa en el HTML
-      center: this.origin, //|| [lon, lat],         // Coordenadas iniciales (Ámsterdam en este ejemplo)
-      zoom: 16
-    });
-    this.map.setCenter(this.origin);
-    this.addMarker(this.origin, 'Salida');
-    this.addMarker(this.destination, 'Destino');
-
-    if (this.waypoints.length > 0) {
-      this.waypoints.forEach((point, index) =>
-        this.addMarker(point, `Punto ${index + 1}`)
-      );
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes) {
+      this.resizeMap();
     }
-    this.getLocationDriver();
-    this.getEstadoViaje();
-    this.intervalEstadoId = setInterval(() => {
-      this.getEstadoViaje();
+  }
+
+  resizeMap() {
+    if (this.mapElement) {
+      setTimeout(() => {
+        google.maps.event.trigger(this.mapElement.nativeElement, 'resize');
+      }, 300); // Pequeña pausa para que se actualice correctamente
+    }
+  }
+
+  activarRuteo() {
+    if (this.tipoPunto == 'A') {
+      this.drawRoute(this.tipoPunto)
+    } else if (this.tipoPunto == 'B') {
+      this.drawRoute(this.tipoPunto)
+    }
+
+    setInterval(() => {
+      if (this.tipoPunto == 'A') {
+        this.drawRoute(this.tipoPunto)
+      } else if (this.tipoPunto == 'B') {
+        this.drawRoute(this.tipoPunto)
+      }
+    }, 6000)
+  }
+
+  getEstadoViajeActual() {
+    if (this.estado_viaje != 'Pendiente de Iniciar') {
+      if (this.estado_viaje == 'En Ruta a Pasajero') {
+        this.tipoPunto = 'A';
+      } else {
+        this.tipoPunto = 'B';
+      }
+    }
+    /* else {
+      console.log("EL VIAJE NO SE HA INICIADO");
+    }*/
+    let time = setInterval(() => {
+      if (this.estado_viaje != 'Pendiente de Iniciar') {
+        if (this.estado_viaje == 'En Ruta a Pasajero') {
+          this.tipoPunto = 'A';
+        } else {
+          this.tipoPunto = 'B';
+        }
+      }
     }, 1000)
   }
 
-  getEstadoViaje() {
-    const response = this.uSer.getestadoviaje(this.idSoli);
-    response.subscribe((re) => {
-      this.estados = re.result[0];
+  async initializeMap() {
+    let latLng = new google.maps.LatLng(this.origin.lat, this.origin.lng);
 
-      if (this.estados.estado_viaje == 'En Ruta a Destino' || this.estados.estado_viaje == 'Conductor Llego a Salida') {
-        //   this.drawRoute('B');
-        this.tipoPunto = 'B';
-      } else if (this.estados.estado_viaje == 'En Ruta a Salida') {
-        // this.drawRoute('A');
-        this.tipoPunto = 'A';
+    this.map = new google.maps.Map(document.getElementById("map-routing"), {
+      center: latLng,
+      zoom: 19,
+      disableDefaultUI: true,
+      rotateControl: true,
+    });
+    this.map?.setCenter(latLng);
+    await this.getDatoDelusuario(latLng)
+    this.directionsDisplayUserCli.setMap(this.map);
+    if (this.map) {
+      await this.addMarkerSalida(new google.maps.LatLng(this.origin.lat, this.origin.lng));
+      await this.addMarkerDestino(new google.maps.LatLng(this.destination.lat, this.destination.lng));
+    }
+
+
+  }
+
+  getDatoDelusuario(latLng: any) {
+    if (this.rol != 'conductor') {
+      //POSICION DEL USUARIO - SI ES PERFIL USUARIO
+      this.getLocationUser();
+    } else {
+      //POSICION DEL CONDUCTOR EN TIEMPO REAL  - SI ES PERFIL CONDUCTOR
+      this.startWatchPosition(latLng);
+    }
+  }
+
+  async startWatchPosition(latLng: any) {
+    this.marker = new google.maps.Marker({
+      position: latLng,
+      map: this.map,
+      title: 'Tu ubicación',
+      icon: {
+        url: this.createCustomPointElement(0), // Ruta de tu icono personalizado
+        scaledSize: new google.maps.Size(50, 50), // Tamaño del icono
+        anchor: new google.maps.Point(25, 25), // Punto central del icono
+        rotation: 0, // Rotación inicial
+      } as any
+    });
+
+    this.location.watchLocation$.subscribe((coords) => {
+      const newLatLng = new google.maps.LatLng(
+        coords.lat,
+        coords.lon
+      );
+
+      // Actualizar la posición y rotación del marcador
+      this.marker?.setPosition(newLatLng);
+      this.marker?.setIcon({
+        url: this.createCustomPointElement(coords.heading), // Mismo ícono
+        scaledSize: new google.maps.Size(50, 50),
+        anchor: new google.maps.Point(25, 25),
+        rotation: coords.heading, // Aplicar rotación
+      } as any);
+      this.coordeDriver = { lat: coords.lat, lon: coords.lon };
+
+      this.lastPosition = newLatLng;
+
+      if(this.estado_viaje != 'Pendiente de Iniciar'){
+        this.map?.setCenter(newLatLng);
       }
+
     })
   }
 
-  getLocationDriver() {
+  getLocationUser() {
     this.getLocation()
   }
 
   getLocation() {
     const responses = this.uSer.getIconDriverLocation(this.idConductor);
     responses.subscribe((re) => {
+      this.getRouteLocationDriver(re);
       this.intervalLocationId = setInterval(() => {
-        this.uSer.getLocation(this.idConductor).subscribe(
-          (data: any) => {
-
-            this.iconDriver = re.result;
-            const { lat, lon, angle } = data.result[0];
-
-            const coordenadas = {
-              lon: lon,
-              lat: lat,
-            };
-            this.coordeDriver = data.result[0];
-            if (this.tipoPunto == 'A') {
-              this.drawRoute('A');
-            }
-            this.initializeRealTimeMarker(coordenadas, angle)
-          })
+        this.getRouteLocationDriver(re);
       }, 10000);
     },
       (error) => {
@@ -127,37 +212,80 @@ export class MapRoutingComponent implements OnInit {
 
   }
 
+  getRouteLocationDriver(re: any) {
+    this.uSer.getLocation(this.idConductor).subscribe(
+      (data: any) => {
+        this.iconDriver = re.result;
+        const { lat, lon, angle } = data.result[0];
+
+        const coordenadas = {
+          lon: lon,
+          lat: lat,
+        };
+        this.coordeDriver = data.result[0];
+
+        this.initializeRealTimeMarker(coordenadas, angle)
+      })
+  }
+
   // Método para inicializar el marcador
   initializeRealTimeMarker(coords: { lon: number, lat: number, }, angle: number) {
+    const newLatLng = new google.maps.LatLng(
+      coords.lat,
+      coords.lon
+    );
+
     if (!this.marker) {
-      this.marker = new tt.Marker({
-        element: this.createCustomPointElement(angle), // Crear el elemento personalizado
-        anchor: 'center'
-      }).setLngLat([coords.lon, coords.lat])
-        .addTo(this.map);
+      this.marker = new google.maps.Marker({
+        position: newLatLng,
+        map: this.map,
+        title: 'Tu ubicación',
+        icon: {
+          url: this.createCustomPointElement(angle), // Ruta de tu icono personalizado
+          scaledSize: new google.maps.Size(33, 33), // Tamaño del icono
+          anchor: new google.maps.Point(25, 25), // Punto central del icono
+          rotation: 0, // Rotación inicial
+        } as any
+      });
     } else {
-      this.marker.setLngLat([coords.lon, coords.lat]);
-      this.updateMarkerRotation(angle); // Actualizar la rotación
+      // Actualizar la posición y rotación del marcador
+      this.marker?.setPosition(newLatLng);
+      this.marker?.setIcon({
+        url: this.createCustomPointElement(angle),
+        scaledSize: new google.maps.Size(33, 33),
+        anchor: new google.maps.Point(25, 25),
+      } as any);
+      // Mover la cámara
+      // this.map?.setCenter(newLatLng);
+      // Actualizar la última posición
+      this.lastPosition = newLatLng;
+    }
+
+    if (this.tipoPunto == 'A') {
+      //   this.drawRoute('A');
+    }
+
+    if (this.tipoPunto == 'B') {
+      // this.drawRoute('B');
     }
   }
 
-  // Método para actualizar la rotación del marcador
-  updateMarkerRotation(angle: number) {
-    const arrowElement = this.marker.getElement().querySelector(`img[alt="${this.iconDriver}"]`);
-    if (arrowElement) {
-      const mapRotation = this.map.getBearing();
-      arrowElement.style.transform = `translate(-50%, -50%) rotate(${angle}deg)`;
-    }
-  }
 
-  createCustomPointElement(angle: number): HTMLElement {
-    const element = document.createElement('div');
-    element.innerHTML = `
-    <div style="position: relative;">
-      <img src="assets/img/${this.iconDriver}/marker.png" alt="${this.iconDriver}" style="width: 35px; height: 35px; transform: rotate(${angle}deg); transition: transform 0.2s;">
-    </div>
+  createCustomPointElement(angle: number): string {
+    var img: any;
+    if (this.iconDriver == 'moto' || this.user.marker == 'moto') {
+      img = IMAGES.moto;
+    } else {
+      img = IMAGES.carro;
+    }
+    const svgIcon = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="35" height="35" viewBox="0 0 100 100">
+      <g transform="rotate(${angle}, 50, 50)">
+        <image href="${img}" x="0" y="0" height="100" width="100"/>
+      </g>
+    </svg>
   `;
-    return element;
+    return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svgIcon);
   }
 
   actualizarDato(lng: number, lat: number) {
@@ -165,111 +293,121 @@ export class MapRoutingComponent implements OnInit {
     this.sharedDataService.setData(data);
   }
 
-  meLocation() {
-    this.sharedDataService.melocation.subscribe((data) => {
-      if (data) {
-        this.currentMarker.setLngLat([data.lng, data.lat]);
-        this.map.setZoom(15);
-        //    this.map.setCenter([data.lng, data.lat]);
-        this.actualizarDato(data.lng, data.lat);
-      }
+  addMarkerSalida(latLng: any) {
+    // Determinar el color del marcador según el título
+    let url: any; // Color por defecto
+    let size: any;
+    let punto: any;
+
+    url = `assets/marker/user.png`;
+    punto = 'A';
+    size = new google.maps.Size(30, 43);
+
+    this.markerSalida = new google.maps.Marker({
+      position: latLng,
+      map: this.map,
+      title: 'Salida',
+      icon: {
+        url: url, // Ruta de tu icono personalizado
+        scaledSize: size, // Tamaño del icono
+        anchor: new google.maps.Point(25, 50),// Punto central del icono
+        rotation: 0, // Rotación inicial
+      } as any
     });
+    this.map?.setCenter(latLng);
   }
 
-  addMarker(position: { lat: number; lng: number }, title: string) {
+  addMarkerDestino(latLng: any) {
     // Determinar el color del marcador según el título
-    let markerColor = 'blue'; // Color por defecto
-    if (title.toLowerCase() === 'salida') {
-      markerColor = 'green';
-    } else if (title.toLowerCase() === 'destino') {
-      markerColor = 'red';
-    }
-    // Crear un marcador personalizado con el color
-    const markerElement = document.createElement('div');
-    markerElement.style.width = '24px';
-    markerElement.style.height = '24px';
-    markerElement.style.backgroundColor = markerColor;
-    markerElement.style.borderRadius = '50%';
-    markerElement.style.border = '2px solid white';
-    markerElement.style.boxShadow = '0px 2px 6px rgba(0,0,0,0.3)';
+    let url: any; // Color por defecto
+    let size: any;
+    let punto: any;
 
-    // Crear y añadir el marcador al mapa
-    const marker = new tt.Marker({
-      element: markerElement,
-      anchor: 'bottom', // Asegurar que el marcador esté anclado correctamente
-    })
-      .setLngLat([position.lng, position.lat])
-      .addTo(this.map);
+    url = `assets/marker/destinoroute.png`;
+    size = new google.maps.Size(23, 23);
+    punto = 'B';
 
-    // Crea un popup
-    const popup = new tt.Popup({
-      offset: { bottom: [0, -20] }, // Coloca el popup encima del marcador
-    }).setHTML(`<div class="custom-popup"><strong>${title}</strong></div>`);
-
-    // Asociar el popup al marcador
-    marker.setPopup(popup).togglePopup();
+    const currentMarker = new google.maps.Marker({
+      position: latLng,
+      map: this.map,
+      title: 'Destino',
+      icon: {
+        url: url, // Ruta de tu icono personalizado
+        scaledSize: size, // Tamaño del icono
+        anchor: new google.maps.Point(25, 50),// Punto central del icono
+        rotation: 0, // Rotación inicial
+      } as any
+    });
   }
 
   drawRoute(punto: any) {
-    var routePoints: any;
+    console.log("Estoy ctualizando cada 6seg ")
+
+    var origin: any;
+    var destination: any;
+
     if (punto == 'B') {
-      routePoints = [this.origin, ...this.waypoints, this.destination].map(
-        (point) => ({ point })
-      );
+
+      origin = { lat: this.origin.lat, lng: this.origin.lng };
+      destination = { lat: this.destination.lat, lng: this.destination.lng };
     } else {
-      routePoints = [{ lat: this.coordeDriver.lat, lng: this.coordeDriver.lon }, this.origin,].map(
-        (point) => ({ point })
-      );
+      origin = { lat: this.coordeDriver.lat, lng: this.coordeDriver.lon };
+      destination = { lat: this.origin.lat, lng: this.origin.lng };
+    }
+    // Solo actualizar si hay un cambio significativo en la posición del conductor
+    const currentDriverPosition = new google.maps.LatLng(origin.lat, origin.lng);
+    //  this.map?.setCenter(new google.maps.LatLng(origin.lat, origin.lng));
+    if (this.lastDriverPosition && google.maps.geometry.spherical.computeDistanceBetween(this.lastDriverPosition, currentDriverPosition) < 2) {
+      // No actualizamos si el cambio es menor a 10 metros
+      return;
     }
 
-    ttServices.services.calculateRoute({
-      key: 'yhGwpc1KP3yK4Pqb7KZXjJD91wf3aTy9',
-      traffic: true,
-      routeType: 'fastest',
-      locations: routePoints.map((p: any) => `${p.point.lng},${p.point.lat}`).join(':'),
-    }).then((routeData) => {
-      // Obtener el tiempo estimado de llegada
-      const eta = routeData.routes[0].summary.travelTimeInSeconds; // en segundos
-      const etaMinutes = Math.round(eta / 60); // convertir a minutos
-      this.tiempo = etaMinutes;
-      this.shared.changeParam(this.tiempo);
-      const geoJson = routeData.toGeoJson();
-      if (this.map.isStyleLoaded()) {
-        this.addRouteLayer(geoJson);
-      } else {
-        this.map.once('style.load', () => {
-          this.addRouteLayer(geoJson);
-        });
-      }
+    this.lastDriverPosition = currentDriverPosition;
 
+    this.directionsServiceUserCli.route(
+      {
+        origin: origin,
+        destination: destination,
+        optimizeWaypoints: true,
+        travelMode: google.maps.TravelMode.DRIVING,
+      },
+      (response: any, status: any) => {
+        if (status === "OK") {
+          this.directionsDisplayUserCli.setDirections(response);
+          this.map?.setCenter(origin);
+
+          const route = response.routes[0];
+          const legs = route.legs[0];
+
+          this.tiempo = legs.duration?.text;
+          var distancia = legs.distance?.text;
+          var data = {
+            tiempo: this.tiempo,
+            distancia: distancia
+          }
+          this.shared.changeParam(data);
+        }
+      })
+  }
+
+  meLocation() {
+    this.sharedDataService.melocation.subscribe((data) => {
+      if (data) {
+        let latLng = new google.maps.LatLng( data.lat, data.lng);
+        this.marker?.setPosition(latLng );
+
+        this.map.setZoom(20);
+        this.map.setCenter(latLng);
+        this.actualizarDato(data.lng, data.lat);
+
+      }
     });
   }
 
-  addRouteLayer(geoJson: any) {
-    if (this.map.getSource('route')) {
-      (this.map.getSource('route') as tt.GeoJSONSource).setData(geoJson);
-    } else {
-      this.map.addLayer({
-        id: 'route',
-        type: 'line',
-        source: {
-          type: 'geojson',
-          data: geoJson,
-        },
-        layout: { 'line-cap': 'round', 'line-join': 'round' },
-        paint: {
-          'line-color': '#4a90e2',
-          'line-width': 6,
-          'line-opacity': 0.8, // Para suavidad
-        },
-      });
-    }
-  }
-
   ngOnDestroy() {
-    if (this.map) {
-      this.map.remove();
-    }
+    /* if (this.map) {
+       this.map.remove();
+     }*/
 
     if (this.intervalEstadoId) {
       clearInterval(this.intervalEstadoId);
@@ -278,7 +416,6 @@ export class MapRoutingComponent implements OnInit {
     if (this.intervalLocationId) {
       clearInterval(this.intervalLocationId);
     }
-
     this.getLocation()
   }
 

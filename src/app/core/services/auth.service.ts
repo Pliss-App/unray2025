@@ -4,16 +4,18 @@ import { BehaviorSubject, Observable } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { AlertController } from '@ionic/angular';
+import { Location } from '@angular/common';
+import { environment } from 'src/environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
-export class AuthService { //'https://unrayappserver.onrender.com/api';
-  private authUrl = 'https://unrayappserver.onrender.com/api';
+export class AuthService { //'https://unrayappserver.onrender.com/api';  
+  private authUrl = `${environment.url}/api`;
   private currentUserSubject: BehaviorSubject<any>;
   public currentUser: Observable<any>;
 
-  constructor(private http: HttpClient, private router: Router, private alertController: AlertController) {
+  constructor(private location: Location, private http: HttpClient, private router: Router, private alertController: AlertController) {
     this.currentUserSubject = new BehaviorSubject<any>(JSON.parse(localStorage.getItem('currentUser')!));
     this.currentUser = this.currentUserSubject.asObservable();
   }
@@ -22,7 +24,7 @@ export class AuthService { //'https://unrayappserver.onrender.com/api';
   login(credenciales: any) {
     return this.http.post<any>(`${this.authUrl}/user/login`, credenciales)
       .pipe(map(async user => {
-        console.log("Erro ", user)
+   
         if(user?.msg){
           if (user && user.token) {
             localStorage.setItem('currentUser', JSON.stringify(user.user));
@@ -76,11 +78,17 @@ export class AuthService { //'https://unrayappserver.onrender.com/api';
   logout() {
     localStorage.removeItem('currentUser');
     this.currentUserSubject.next(null);
-    this.router.navigate(['/auth/login']);
+ /*   this.router.navigate(['/auth/login']);
     // Redirige a la página de autenticación y fuerza la recarga
     this.router.navigateByUrl('/auth').then(() => {
       window.location.reload(); // Recarga completa de la app para ejecutar inicialización
     });
+*/
+
+    this.router.navigate(['/auth/login'], { replaceUrl: true }).then(() => {
+      this.location.go('/auth/login'); 
+      window.location.reload();
+    })
   }
 
   // Verificar si el usuario está autenticado

@@ -17,7 +17,55 @@ const routes: Routes = [
   {
     path: 'calificar',
     loadChildren: () => import('./pages/calificar/calificar.module').then( m => m.CalificarPageModule)
+  },
+  {
+    path: 'historial',
+    loadChildren: () => import('./pages/historial/historial.module').then( m => m.HistorialPageModule), canActivate: [AuthGuard]
+  },
+  {
+    path: 'seguridad',
+    loadChildren: () => import('./pages/seguridad/seguridad.module').then( m => m.SeguridadPageModule)
+  },
+  {
+    path: 'ayuda',
+    loadChildren: () => import('./pages/ayuda/ayuda.module').then( m => m.AyudaPageModule), canActivate: [AuthGuard]
+  },
+  {
+    path: 'configuracion',
+    loadChildren: () => import('./pages/configuracion/configuracion.module').then( m => m.ConfiguracionPageModule), canActivate: [AuthGuard]
+  },
+  {
+    path: 'soporte',
+    loadChildren: () => import('./pages/soporte/soporte.module').then( m => m.SoportePageModule), canActivate: [AuthGuard]
+  },
+  {
+    path: 'soporte/formulario',
+    loadChildren: () => import('./pages/formulario/formulario.module').then( m => m.FormularioPageModule), canActivate: [AuthGuard]
+  }, 
+  {
+    path: 'configuracion/politicas',
+    loadChildren: () => import('./pages/politicas/politicas.module').then( m => m.PoliticasPageModule), canActivate: [AuthGuard]
+  },
+  {
+    path: 'configuracion/aplicacion',
+    loadChildren: () => import('./pages/aplicacion/aplicacion.module').then( m => m.AplicacionPageModule),canActivate: [AuthGuard]
+  },
+  {
+    path: 'ayuda/preguntasfrecuentes',
+    loadChildren: () => import('./pages/preguntasfrecuentes/preguntasfrecuentes.module').then( m => m.PreguntasfrecuentesPageModule)
+  },
+  {
+    path: 'ayuda/problemaosugerencia',
+    loadChildren: () => import('./pages/problemaosugerencia/problemaosugerencia.module').then( m => m.ProblemaosugerenciaPageModule)
+  },  {
+    path: 'notificaciones',
+    loadChildren: () => import('./pages/notificaciones/notificaciones.module').then( m => m.NotificacionesPageModule)
   }
+
+
+
+
+
 
 // Protección de ruta }
 ];

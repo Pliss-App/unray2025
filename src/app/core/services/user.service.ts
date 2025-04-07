@@ -12,6 +12,21 @@ export class UserService {
     return this.apiService.get('user/profile');
   }
 
+
+  getRating(id:any) {
+    return this.apiService.get(`user/rating/${id}`);
+  }
+
+
+  verificarCuenta(data:any) {
+    return this.apiService.put(`user/verificar-cuenta`, data);
+  }
+
+
+  profileCalificacion(id:any) {
+    return this.apiService.get(`user/usercalificacion/${id}`);
+  }
+
   // Obtener usuario conductor
   getDriverProfile(id: any) {
     return this.apiService.get(`viaje/soli/driver/${id}`);
@@ -25,14 +40,20 @@ export class UserService {
 
 
   getServicios() {
-    return this.apiService.get('servicios/todos');
+    return this.apiService.get('servicios/activos');
+  }
+
+  getEstado(id: any) {
+    return this.apiService.get(`user/estado/${id}`);
   }
 
   getSaldo(id: any) {
     return this.apiService.get(`conductor/saldo-billetera/${id}`);
   }
 
-
+  getPreguntasFrecuentes(rol:any) {
+    return this.apiService.get(`user/preguntasfrecuentes/${rol}`);
+  }
 
   getFoto(id: any) {
     return this.apiService.get(`user/foto/${id}`);
@@ -42,8 +63,14 @@ export class UserService {
     return this.apiService.post(`user/update-location`, data);
   }
 
+
+  
+  eliminarCuenta(data: any) {
+    return this.apiService.put(`user/eliminar-cuenta`, data);
+  }
+
   updatePasswordNew(data: any) {
-    return this.apiService.post(`user/reset-password`, data);
+    return this.apiService.put(`user/reset-password`, data);
   }
 
   cancelarSolicitud(data: any) {
@@ -57,6 +84,20 @@ export class UserService {
   insertDocumentos(data: any) {
     return this.apiService.post(`documentacion/insert`, data);
   }
+
+  insertProblemaSugerencia(data: any) {
+    return this.apiService.post(`user/insert-problema-sugerencia`, data);
+  }
+
+  insertNotaSoporteUsuario(data: any) {
+    return this.apiService.post(`user/insertnotasoporteusuario`, data);
+  }
+
+  enviarSolicitud(data: any) {
+    return this.apiService.post(`solicitudes/crear`, data);
+  }
+
+
 
   recargarBilletara(data: any) {
     return this.apiService.post(`conductor/recargar-billetera`, data);
@@ -82,6 +123,10 @@ export class UserService {
   // Actualizar perfil del usuario
   updateFotoPerfil(data: any) {
     return this.apiService.put('user/updateFoto', data);
+  }
+
+  updateEstadoUser(id: any, data: any) {
+    return this.apiService.put(`user/update-estado/${id}`, data);
   }
 
   createSolicitud(data: any) {
@@ -111,12 +156,16 @@ export class UserService {
     return this.apiService.get(`viaje/soli_user/${userId}`);
   }
 
+  updateEstadoConductorViaje(id_: any) {
+    return this.apiService.put(`solicitudes/update-estado-usuario`, {id: id_});
+  }
+
   sendMensajes(data: any) {
     return this.apiService.sendChat(`viaje/send/mensajes`, data);
   }
 
-  getMensajes(emisor_id: any, receptor_id: any) {
-    return this.apiService.getChat(`viaje/obtener/mensajes`, emisor_id, receptor_id);
+  getMensajes(idViaje: any, emisor_id: any, receptor_id: any) {
+    return this.apiService.getChat(`viaje/obtener/mensajes`,idViaje, emisor_id, receptor_id);
   }
 
   getLocation(id: any) {
@@ -125,6 +174,10 @@ export class UserService {
 
   getIconDriverLocation(id: any) {
     return this.apiService.get(`user/icon-driver/${id}`);
+  }
+
+  getHistorial(userId: any, role: any, offset:any) {
+    return this.apiService.get(`viaje/historial?userId=${userId}&role=${role}&offset=${offset}`);
   }
 
   getestadoviaje(id: any) {
@@ -139,8 +192,9 @@ export class UserService {
     return this.apiService.get(`viaje/soli_calificacion_usuario/${id}/${rol}`);
   }
 
-  getNoCalificacionConductor(id:any, rol:any) {
-    return this.apiService.get(`viaje/soli_calificacion_conductor/${id}/${rol}`);
+  //AQUI
+  getNoCalificacion(id:any) {
+    return this.apiService.get(`viaje/soli_no_calificacion/${id}`);
   }
 
   updateEstadoViaje({ data }: { data: any; }) {
@@ -162,4 +216,19 @@ export class UserService {
   updatetSocketIo(data: any) {
     return this.apiService.put(`user/update-socket-io`, data);
   }
+
+
+  getSMSDefinido(item:any) {
+    return this.apiService.get(`viaje/obtener-sms-definido/${item}`);
+  }
+
+
+  getNotificacionesUser(id:any) {
+    return this.apiService.get(`user/notificaciones/${id}`);
+  }
+
+  updatetNotificacion(data: any) {
+    return this.apiService.put(`user/update-notificaciones`, data);
+  }
+
 }

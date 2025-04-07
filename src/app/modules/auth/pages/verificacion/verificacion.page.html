@@ -1,0 +1,38 @@
+<ion-content class="ion-padding">
+  <div class="container">
+    <ion-card>
+      <ion-card-header>
+        <ion-card-title>Verificar Cuenta</ion-card-title>
+        <ion-card-subtitle>
+          Ingresa el código de verificación que te hemos enviado por correo electrónico.
+        </ion-card-subtitle>
+      </ion-card-header>
+
+      <ion-card-content>
+        <form [formGroup]="verificationForm" (ngSubmit)="onSubmit()">
+          <!-- Campo para ingresar el código -->
+          <ion-item lines="full">
+            <ion-icon name="key-outline" slot="start"></ion-icon>
+            <ion-input 
+              type="number" 
+              formControlName="verificationCode" 
+              placeholder="Ingresa el código"
+              maxlength="6"
+              required>
+            </ion-input>
+          </ion-item>
+
+          <!-- Mensaje de error -->
+          <ion-text color="danger" *ngIf="verificationForm.get('verificationCode')?.invalid && verificationForm.get('verificationCode')?.touched">
+            El código es requerido y debe tener 6 dígitos.
+          </ion-text>
+
+          <!-- Botón Enviar -->
+          <ion-button expand="block" color="primary" type="submit" [disabled]="verificationForm.invalid">
+            Verificar
+          </ion-button>
+        </form>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>

@@ -1,19 +1,15 @@
 <!-- bottom-sheet.component.html -->
-<div class="alert-search-driver" *ngIf="estadoSolicitud ">
+<div class="alert-search-driver" *ngIf="estadoSolicitud">
 
-  <div class="center-div">
+  <div [class]="responseSolicitud =='success' ? 'success' : 'danger'">
     <div class="estado-solicitud">
       <p>{{ estadoSolicitud }}</p>
-    </div>
-
-    <div *ngIf="conductorSeleccionado">
-      <p>Conductor seleccionado: {{ conductorSeleccionado }}</p>
     </div>
   </div>
 </div>
 
 
-<div class="bottom-sheet" #bottomSheet>
+<div class="bottom-sheet" #bottomSheet [ngStyle]="{'height.px': currentHeight}">
 
 
   <div *ngIf="services.length>0" class="horizontal-scroll">
@@ -24,7 +20,7 @@
     </div>
   </div>
 
-  <div *ngIf="services.length==0" class="horizontal-scroll">
+  <div *ngIf="services.length==0" class="horizontal-scroll" >
     <div class="card" *ngFor="let item of [0,1,2,3,4]">
       <ion-item style="border-radius: 10px;">
         <ion-thumbnail style="width: 100%; border-radius: 10px;" animated>
@@ -35,11 +31,29 @@
   </div>
 
   <!-- Contenido del bottom sheet -->
-  <div class="content">
-    <div *ngIf="distance" class="data-distance">
-      <p style="margin: 0px;"> <ion-icon name="navigate"></ion-icon> {{distance.distance}} {{distance.abrdistance}} -
-        <ion-icon name="stopwatch"></ion-icon>{{distance.time}} {{distance.abrtime}} | <span
-          style="color: green; font-weight: bolder; font-size: 20pt;">Q{{costoViaje}}</span> </p>
+  <div class="content" #contentDiv  >
+    <div  *ngIf="distance" class="data-distance">
+      <ion-row>
+        <ion-col size="1">
+          <ion-icon style="font-size: 18pt;" name="time-outline"></ion-icon>
+        </ion-col>
+        <ion-col size="11">
+          <p class="p-precio">Precio de viaje  <span style="font-size: 16pt;">Q{{costoViaje}}</span></p>
+          <p class="p-tiempo-distancia">Tiempo de viaje {{distance.durationtext}} </p>
+        </ion-col>
+      </ion-row>
+      <!-- Distancia y duración a la izquierda -->
+
+    <!--  <div style="display: flex; gap: 10px; align-items: center;">
+        <p style="margin: 0;">
+          <ion-icon name="navigate-circle-outline"></ion-icon> {{distance.distancetext}} -
+          {{distance.durationtext}}
+        </p>
+      </div>
+    
+      <div>
+        <span style=" margin-right: 10px; color: green; font-weight: bolder; font-size: 20pt;">Q{{costoViaje}}</span>
+      </div> -->
     </div>
 
     <ion-grid style="margin-bottom: -25px;" class="centered-card">
@@ -71,8 +85,15 @@
         </ion-col> -->
       </ion-row>
     </ion-grid>
-    <ion-button [disabled]="isActive === true ? true : estadoSolicitud === 'Buscando el conductor más cercano...'" (click)="solicitar()" style="width: 175px; margin: 0 auto;" shape="round"
-      expand="full"> Solicitar </ion-button>
+    <ion-button 
+    size="large" 
+    shape="round"
+    [disabled]="isActive === true ? true : estadoSolicitud === 'Buscando el conductor más cercano...'" 
+    (click)="solicitar()" 
+    class="btn-buscar-conductor" 
+    expand="block">
+    Buscar conductor
+  </ion-button>
 
 
   </div>

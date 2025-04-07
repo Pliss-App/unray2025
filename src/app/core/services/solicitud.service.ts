@@ -1,12 +1,15 @@
 import { Injectable } from '@angular/core';
+import { LocalNotifications } from '@capacitor/local-notifications';
 import { UserService } from './user.service';
 import { Socket } from 'socket.io-client';
 import { WebSocketService } from './web-socket.service';
 import { BehaviorSubject, catchError, interval, of, Subject, Subscription, switchMap } from 'rxjs';
 import { AuthService } from './auth.service';
 import { Router } from '@angular/router';
-import { ActivatedRoute } from '@angular/router'; 
+import { ActivatedRoute } from '@angular/router';
 import { Location } from '@angular/common';
+import { SharedService } from './shared.service';
+import { Storage } from '@capacitor/storage';
 
 @Injectable({
   providedIn: 'root'
@@ -18,6 +21,7 @@ export class SolicitudService {
   private tripStatus$ = new BehaviorSubject<boolean>(false);
   private pollingSubscription: Subscription | null = null;
   user: any;
+  role: any = null;
   conductoresDisponibles = [
     { id: 'conductor1', nombre: 'Juan' },
     { id: 'conductor2', nombre: 'Luis' },
@@ -29,18 +33,24 @@ export class SolicitudService {
   private solicitudRespuestaSubject = new Subject<any>();
   public solicitudRespuesta$ = this.solicitudRespuestaSubject.asObservable();
 
-  constructor(private route: ActivatedRoute,private location: Location, private api: UserService, private socketService: WebSocketService, private auth: AuthService, private router: Router
-  ) { }
+  constructor(private route: ActivatedRoute, private location: Location, private sharedService: SharedService,
+    private api: UserService, private socketService: WebSocketService,
+    private auth: AuthService, private router: Router
+  ) {
+
+    this.role = this.auth.getRole();
+  }
 
   // Inicia la consulta al endpoint
   startPolling() {
     this.user = this.auth.getUser();
     const userRole = this.auth.getRole();
-   // console.log("DATOS DEL USUARIO ", this.user)
+    // console.log("DATOS DEL USUARIO ", this.user)
     if (!this.user) {
       console.error('Usuario no autenticado.');
       return;
     }
+
     this.getSolicitud();
     if (this.pollingSubscription) {
       return; // Ya está activo el polling
@@ -50,7 +60,7 @@ export class SolicitudService {
       .pipe(
         switchMap(() => {
           const timestamp = new Date().getTime(); // Generar un timestamp único
-      //    console.log('Consultando endpoint...');
+          //    console.log('Consultando endpoint...');
           return this.api.checkActiveTravel(this.user.idUser, timestamp);
         }),
         catchError((error) => {
@@ -59,20 +69,20 @@ export class SolicitudService {
         })
       )
       .subscribe((response) => {
-    //    console.log('Respuesta recibida:', response);
+        //    console.log('Respuesta recibida:', response);
         if (response?.success) {
-       //   console.log('Viaje activo detectado');
+          //   console.log('Viaje activo detectado');
           this.tripStatus$.next(true);
           this.navigateToActiveTrip(userRole);
           //   this.stopPolling();
         } else {
 
-          var url:any =  this.router.url;
-          if( url == "/user/travel-route" || url == "/driver/travel-route"){
+          var url: any = this.router.url;
+          if (url == "/user/travel-route" || url == "/driver/travel-route") {
             this.resumePollingOnTripEnd();
           }
-       
-   
+
+
         }
       });
   }
@@ -82,7 +92,7 @@ export class SolicitudService {
     const timestamp = new Date().getTime();
     this.api.checkActiveTravel(this.user.idUser, timestamp).subscribe((response) => {
       if (response?.success) {
-        //    console.log("TIEN ACTVA ", response);
+        this.sharedService.datViaPre(response)
         // this.solicitud = response.result;
         this.navigateToActiveTrip(userRole);
       }
@@ -97,7 +107,7 @@ export class SolicitudService {
   }
 
   // Navega a la vista del viaje activo
-  private navigateToActiveTrip(userRole: any) {
+  navigateToActiveTrip(userRole: any) {
     if (userRole === 'usuario') {
       this.router.navigate(['/user/travel-route']); // Ajusta la ruta según tu aplicación
     } else {
@@ -108,18 +118,18 @@ export class SolicitudService {
 
   // Reanuda el polling al finalizar el viaje
   resumePollingOnTripEnd() {
-    this.startPolling(); 
+    this.startPolling();
     this.tripStatus$.next(false);
     const userRole = this.auth.getRole();
     if (userRole === 'usuario') {
       this.router.navigate(['/user/home'], { replaceUrl: true }).then(() => {
-        this.location.go('/user/home'); 
+        this.location.go('/user/home');
         window.location.reload();
       });
     } else {
       this.router.navigate(['/driver/home'], { replaceUrl: true }).then(() => {
         this.location.go('/driver/home');
-    //    window.location.reload();
+        //    window.location.reload();
       });
     }
 
@@ -127,6 +137,7 @@ export class SolicitudService {
 
 
   enviarRespuesta(respuesta: any) {
+    this.sharedService.activeMenuLat(false);
     this.solicitudRespuestaSubject.next(respuesta);
   }
 
@@ -136,24 +147,13 @@ export class SolicitudService {
     actualizarEstado: (estado: string) => void,
     onSolicitudAceptada: (conductorId: string) => void
   ) {
+    const response = this.api.enviarSolicitud(solicitud);
 
-   // this.socketService.crearSolicitud(solicitud);
-    const response = this.api.createSolicitudDriver(solicitud); //  this.api.createSolicitud(solicitud);
     response.subscribe((re) => {
       this.enviarRespuesta(re);
+
     })
   }
 
-  /* startPolling(userId: string) {
-     return interval(5000).pipe( // Polling cada 5 segundos
-       switchMap(() => 
-         this.api.checkActiveTravel(userId).pipe(
-           catchError((error) => {
-             console.error('Error al consultar el estado del viaje:', error);
-             return of(null); // Evita que el polling se detenga por errores
-           })
-         )
-       )
-     );
-   }*/
+
 }

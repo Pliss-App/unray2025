@@ -1,9 +1,7 @@
-import { Injectable, OnInit } from '@angular/core';
+import { Injectable} from '@angular/core';
 
-import { Platform } from '@ionic/angular';
-//import { Geolocation } from '@awesome-cordova-plugins/geolocation/ngx';
+
 import { Geolocation } from '@capacitor/geolocation';
-import { AndroidPermissions } from '@awesome-cordova-plugins/android-permissions/ngx';
 import { Capacitor } from '@capacitor/core';
 import { UserService } from './user.service';
 import { BehaviorSubject } from 'rxjs';
@@ -24,9 +22,9 @@ export class LocationService {
   longitude: number = 0;
   user: any;
   watchId: string | null = null;
-  constructor(private androidPermissions: AndroidPermissions,private http: HttpClient,
-     private userAuth: UserService, private geolocation: Geolocation, private auth: AuthService,
-    private platform: Platform) {
+  constructor(private http: HttpClient,
+     private userAuth: UserService, private auth: AuthService,
+  ) {
       this.getUserLocation();
       this.watchUserLocation();
       this.user = this.auth.getUser();
@@ -108,7 +106,7 @@ export class LocationService {
     this.watch = await Geolocation.watchPosition(
       {
         enableHighAccuracy: true,
-        timeout: 4000, // 10s de espera
+        timeout: 3000, // 10s de espera
         maximumAge: 0,
       },
       (position, err) => {

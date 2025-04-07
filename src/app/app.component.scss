@@ -1,15 +1,21 @@
 .custom-avatar {
-  width: 60px;
+  width: 80px;
   /* Ancho del avatar */
-  height: 60px;
+  height: 80px;
   /* Altura del avatar */
-  border: 5px solid white;
+  border: 2px solid white;
 }
 
 .btn-camera {
   position: absolute;
   right: 0px;
+
   bottom: 5px;
+}
+
+ion-item{
+  font-size: 15pt;
+  color: black;
 }
 
 ion-header {
@@ -26,6 +32,8 @@ ion-header {
 
 .header-menu {
   width: 100%;
+  padding-top: 10px;
+  padding-bottom: 10px;
 }
 
 .item-avatar {
@@ -39,4 +47,30 @@ ion-footer {
 }
 ion-toolbar {
   --border-width: 0;
+}
+
+ion-icon{
+  color: orangered;
+
+}
+
+.rating {
+  display: flex;
+  align-items: center;
+}
+
+.icon-navegate{
+  color:white !important;
+  position: absolute; right: 10px; top: 7px; box-shadow: none !important; 
+}
+
+.start {
+  font-size: 15px;
+  color: gold;
+}
+
+span{
+  margin-top:4px;
+  margin-left: 5px;
+  font-size: 11pt;
 }

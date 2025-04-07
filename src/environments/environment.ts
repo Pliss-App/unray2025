@@ -4,7 +4,13 @@
 
 export const environment = {
   production: false,
-  socketUrl: 'https://unrayappserver.onrender.com'  // 'https://unrayappserver.onrender.com' 
+ socketUrl: 'https://unrayappserver.onrender.com' ,
+    url: 'https://unrayappserver.onrender.com'
+
+/*
+  socketUrl: 'https://unrayappserver.onrender.com' ,
+    url: 'https://unrayappserver.onrender.com' */
+    
 };
 
 /*

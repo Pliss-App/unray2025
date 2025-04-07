@@ -1,34 +1,111 @@
 .centered-card {
-    --border-radius: 16px; 
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 90%; /* Ajusta el tamaño según tus necesidades */
-  }
+  --border-radius: 16px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 99%;
+  /* Ajusta el tamaño según tus necesidades */
+}
 
-  .outlined-input {
-    --border-width: 1px;
+.white-placeholder {
+  --placeholder-color: white;
+  /* Cambia el color del placeholder */
+  color: white;
+  /* Asegura que el texto del input también sea blanco */
+  font-size: 14pt;
+
+  ion-input::placeholder {
+    color: white !important;
+    /* Respaldo adicional */
+  }
+}
+
+.outlined-input {
+  --border-width: 1px;
   --border-style: solid;
-  --border-color: var(--ion-color-medium); /* Cambia el color si lo deseas */
-  --border-radius: 8px; /* Ajusta el radio del borde según el diseño deseado */
-  --background: transparent; /* Asegúrate de que el fondo sea transparente */
-  padding: 10px; /* Quitar padding interno */
-  }
+  --border-color: var(--ion-color-medium);
+  /* Cambia el color si lo deseas */
+  --border-radius: 8px;
+  /* Ajusta el radio del borde según el diseño deseado */
+  --background: transparent;
+  /* Asegúrate de que el fondo sea transparente */
+  padding: 10px;
+  /* Quitar padding interno */
+}
 
-  .outlined-input ion-input {
-    padding: 16px; /* Ajusta el padding del input */
-  }
+.outlined-input ion-input {
+  padding: 16px;
+  /* Ajusta el padding del input */
+}
 
-  .ion-margin-top{
-    --border-radius: 10px !important;
-  }
+.ion-margin-top {
+  --border-radius: 10px !important;
+}
 
-  .custom-alert .alert-title {
+.custom-alert .alert-title {
+  text-align: center;
+  font-weight: bold;
+  /* Opcional: dar estilo al título */
+}
+
+.custom-alert .alert-sub-title {
+  text-align: center;
+}
+
+.sign-up {
+  font-size: 130px;
+  color: orangered;
+  text-align: center !important;
+}
+
+.background-image {
+  --background: url('../../../../../assets/img/registro.jpg') no-repeat center center / cover;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  text-shadow: 0px 2px 5px rgba(0, 0, 0, 0.7);
+
+  .content {
     text-align: center;
-    font-weight: bold; /* Opcional: dar estilo al título */
+    padding: 16px;
   }
-  
-  .custom-alert .alert-sub-title {
-    text-align: center;
-  }
+}
+
+ion-card {
+  box-shadow: none !important;
+  /* Quita las sombras */
+  background: rgba(255, 255, 255, 0.5);
+  /* Bordes opcionales */
+  color: white;
+  /* Ajusta el color del texto si es necesario */
+}
+
+a {
+  color: orangered;
+  box-shadow: none !important;
+  font-weight: bolder;
+}
+
+/*
+.outlined-input-referido{
+  --border-width: 1px;
+  --border-style: solid;
+  --border-color: var(--ion-color-medium);
+  --border-radius: 8px;
+
+  --background: transparent;
+ 
+  padding: 10px;
+}
+*/
+
+.outlined-input-referido {
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  --background: transparent;
+}

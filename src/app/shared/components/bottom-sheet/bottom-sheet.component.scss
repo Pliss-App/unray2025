@@ -4,9 +4,9 @@
   bottom: 0;
   left: 0;
   right: 0;
-  height: 265px;
+  height: 300px;
   /* Altura inicial */
-  max-height: 39vh;
+  max-height: 46vh;
   /* Limita la altura máxima al 80% de la pantalla */
   background: #ffffff;
   border-top-left-radius: 16px;
@@ -19,6 +19,8 @@
     margin-top: 0px;
     padding-left: 15px;
     padding-right: 15px;
+    height: var(--dynamic-height, auto);  // Se actualiza automáticamente
+    transition: height 0.3s ease-in-out;  // Animación suave
   }
 }
 
@@ -38,7 +40,7 @@
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
     text-align: center;
     padding: 0px;
-    border: solid 2px orangered;
+    border: solid 2px rgb(161, 161, 161);
     position: relative;
     text-align: center;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -79,7 +81,7 @@
 .selected-card {
   transform: scale(1.05);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  border: 2px solid #3880ff !important;
+  border: 2px solid orangered !important;
   /* Color de borde resaltado */
 }
 
@@ -91,10 +93,13 @@
 
 
 .data-distance {
-  text-align: center;
+  padding: 8px;
+  border-radius: 10px;
+
   font-weight: bolder;
-  font-size: 14pt;
+  font-size: 12pt;
   color: black;
+  background: rgb(184, 252, 184);
 }
 
 .alert-search-driver {
@@ -118,4 +123,45 @@
   margin: 0 auto;
   /* Margen automático en los lados */
   background-color: rgb(132, 236, 132);
+}
+
+.btn-buscar-conductor {
+  width: 270px;
+  font-size: 12pt;
+  font-weight: 300;
+  height: 50px !important;
+  margin: 0 auto;
+  border-radius: 25px !important;
+}
+
+
+.success {
+  padding-left: 10px;
+  padding-right: 10px;
+  width: 100%;
+  /* Ancho del div */
+  border-radius: 10px;
+  margin: 0 auto;
+  /* Margen automático en los lados */
+  background-color: rgb(132, 236, 132);
+}
+
+.danger {
+  padding-left: 10px;
+  padding-right: 10px;
+  width: 100%;
+  color: white;
+  /* Ancho del div */
+  border-radius: 10px;
+  margin: 0 auto;
+  /* Margen automático en los lados */
+  background-color: rgb(248, 63, 17);
+}
+
+.p-tiempo-distancia{
+margin: 0px;
+}
+
+.p-precio{
+  margin: 0px;
 }

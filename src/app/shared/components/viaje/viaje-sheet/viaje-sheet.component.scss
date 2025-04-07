@@ -21,3 +21,23 @@
   }
   
  
+  .floating-button {
+    position: absolute;
+    top: -55px; /* Para colocarlo encima del bottom-sheet */
+    left: 10px;
+    background-color: white !important; /* Fondo blanco */
+    color: black !important; /* Texto negro */
+    box-shadow: 0 -4px 8px rgba(0, 0, 0, 0.2);
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+
+  }
+  
+  .floating-button ion-icon {
+    margin-right: 8px; /* Espacio entre el icono y el texto */
+    font-size: 20px;
+    color: black !important;
+  }

@@ -15,6 +15,7 @@ import { HomePage } from './home.page';
     IonicModule,
     HomePageRoutingModule,
     SharedModule
+
   ],
   declarations: [HomePage]
 })

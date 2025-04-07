@@ -10,7 +10,7 @@
     top: 48%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 90%; /* Ajusta el tamaño según tus necesidades */
+    width: 99%; /* Ajusta el tamaño según tus necesidades */
   }
 
   .outlined-input {
@@ -54,8 +54,41 @@
   .white-placeholder {
     --placeholder-color: white; /* Cambia el color del placeholder */
     color: white; /* Asegura que el texto del input también sea blanco */
-  
+    font-size: 14pt;
     ion-input::placeholder {
       color: white !important; /* Respaldo adicional */
     }
+  }
+
+  .cuenta{
+    font-size: 12pt;
+  }
+
+  .contrasenia{
+    font-size: 12pt;
+  }
+
+  ion-item {
+    position: relative;
+  }
+  
+  ion-icon {
+    font-size: 22px;
+    cursor: pointer;
+    color: #888;
+  }
+  
+  ion-icon:hover {
+    color: #4caf50;
+  }
+
+
+  a{
+    color: orangered;
+    box-shadow: none !important;
+    font-weight: bolder;
+  }
+ 
+  .rounded-btn{
+    border-radius: 10px !important;
   }

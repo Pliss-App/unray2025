@@ -5,10 +5,14 @@
   <app-map-routing [idSoli]="solicitud.id" [origin]="{ lat: solicitud.start_lat, lng:solicitud.start_lng}"
   [destination]="{ lat:solicitud.end_lat, lng: solicitud.end_lng}"
   [waypoints]="[]"
-  [idConductor]="idConductor" *ngIf="idConductor"    class="mapa-viaje"></app-map-routing> 
+  [estado_viaje]="solicitud.estado_viaje"
+  [idConductor]="idConductor" *ngIf="idConductor"  
+    class="mapa-viaje"    [style.top]="'0px'"
+    [style.bottom]="(sheetHeight - 20) + 'px'"
+    ></app-map-routing> 
 
 
- <app-viaje-sheet [minHeight]="150" [maxHeight]="500" class="viaje-sheet" 
+ <app-viaje-sheet class="viaje-sheet"  (sheetHeightChange)="actualizarAlturaMapa($event)"
  >
 
  <app-user-driver *ngIf="idConductor" 

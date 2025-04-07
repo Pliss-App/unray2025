@@ -1,20 +1,11 @@
 apply plugin: 'com.android.application'
 
 android {
-
-    java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(17))
-    }
-}
-
-    namespace "io.ionic.starter"
+    namespace "com.unrayapp.app"
     compileSdk rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "io.ionic.starter"
+        applicationId "com.unrayapp.app"
         minSdkVersion rootProject.ext.minSdkVersion
-    
-
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName "1.0"
@@ -34,8 +25,10 @@ android {
 }
 
 repositories {
-    google()
-    mavenCentral()
+    flatDir{
+        dirs '../capacitor-cordova-android-plugins/src/main/libs', 'libs'
+		dirs '../../node_modules/@capacitor/background-runner/android/src/main/libs', 'libs'
+    }
 }
 
 dependencies {

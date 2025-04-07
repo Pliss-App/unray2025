@@ -1,0 +1,14 @@
+ion-content {
+    --background: #f4f4f4; /* Fondo opcional */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; /* Toma toda la pantalla */
+  }
+  
+  .container {
+    width: 100%;
+    max-width: 400px; /* Limita el tamaño en pantallas grandes */
+    text-align: center;
+  }
+  

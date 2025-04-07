@@ -1,8 +1,10 @@
 import { Injectable } from '@angular/core';
 import { Platform } from '@ionic/angular';
+import { App } from '@capacitor/app';
 //import { OneSignal } from 'onesignal-ngx';
 //import { OneSignal } from '@ionic-native/onesignal/ngx';
 import OneSignal from 'onesignal-cordova-plugin';
+
 import { UserService } from './user.service';
 import { ApiService } from './api.service';
 //import { OneSignal, OSNotificationPayload } from '@ionic-native/onesignal/ngx'; 
@@ -16,48 +18,90 @@ export class OnesignalService {
 
   constructor(private api: UserService, private platform: Platform, private apiService: ApiService/*, private oneSignal:  OneSignal*/) {
     // this.initialize();
+ 
   }
 
   async initialize(item: any, id: any) {
 
-    if (this.platform.is('cordova')) {
-      OneSignal.initialize(this.appId);
+    await this.platform.ready(); // Espera a que la plataforma esté lista
 
-      // Obtener el userId de OneSignal (playerId)
-      OneSignal.User.pushSubscription.getIdAsync().then((resp) => {
+    if (this.platform.is('capacitor')) {
+      try {
+        OneSignal.initialize(this.appId);
+
+           // 🛑 Verifica si los permisos de notificación ya fueron concedidos
+           const permission = await OneSignal.Notifications.hasPermission();
+           console.log("📢 Permisos de notificación:", permission);
+   
+           if (!permission) {
+             console.log("⚠️ El usuario no ha concedido permisos. Solicitándolos...");
+             await OneSignal.Notifications.requestPermission(true);
+           }
+   
+
+        const subscription = await OneSignal.User.pushSubscription.getIdAsync();
         var data = {
           id: id,
-          token: resp
+          token: subscription
         }
-        this.api.updateTokenOneSignal(data);
-      })
 
-      OneSignal.User.addTag(`notif-${item}`, "true");
+        const rsult = this.api.updateTokenOneSignal(data);
+        rsult.subscribe((re)=>
+        {
+          return;
+        })
 
-      // Manejar la recepción de notificaciones
-      OneSignal.Notifications.addEventListener("foregroundWillDisplay", (event: any) => {
-        console.log("Notificación recibida en primer plano:", event);
-        event.preventDefault();
-        event.notification.display();
-      });
-      // Manejar cuando se abre una notificación
-      OneSignal.Notifications.addEventListener("click", (event) => {
-        console.log("Notificación abierta:", event);
-        // Aquí puedes redirigir a una página específica
-      });
+       // OneSignal.User.addTag(`notif-${item}`, "true");
+
+        // Manejar la recepción de notificaciones
+        OneSignal.Notifications.addEventListener("foregroundWillDisplay", (event: any) => {
+          console.log("Notificación recibida en primer plano:", event);
+          this.playNotificationSound();
+          event.preventDefault();
+
+          event.notification.display();
+       
+        });
+
+        // Manejar cuando se abre una notificación
+        OneSignal.Notifications.addEventListener("click", (event) => {
+          console.log("Notificación abierta:", event);
+          // Aquí puedes redirigir a una página específica
+        });
+
+        
+
+      } catch (error) {
+        console.error('Error inicializando OneSignal:', error);
+      }
     } else {
-      console.log('❌ No está corriendo con Cordova.');
+      console.warn('OneSignal no está disponible en Web');
     }
+  }
+  // Función para reproducir un sonido
+  playNotificationSound() {
+    const audio = new Audio('assets/sound/notificacion_tono.mp3');
+    audio.play();
   }
 
   enviarNotificacion(data: any) {
     return this.apiService.post('viaje/send-notification', data);
   }
 
-  
+
 
 
   getToken(id: any) {
     return this.apiService.get(`viaje/get-token/${id}`);
   }
+
+  
+async requestNotificationPermission() {
+  const status = await OneSignal.Notifications.requestPermission(true);
+  
+  console.log("Estado del permiso:", status);
+}
+
+
+  
 }

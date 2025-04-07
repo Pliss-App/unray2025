@@ -15,30 +15,36 @@ export class WebSocketService {
 
 
   private socket = io(environment.socketUrl, {
-    path: '/api/socket/' // Asegurar que coincide con el backend
+    path: '/api/socket/',
+    transports: ['websocket'], // Asegurar que coincide con el backend,
+    reconnection: true,
+    reconnectionAttempts: 10,
+    reconnectionDelay: 2000
   });
 
   constructor(private api: UserService, private auth: AuthService) {
     this.user = this.auth.getUser();
 
-    if(this.auth.isAuthenticated()){
-    this.socket.on('connect', () => {
-      if (this.auth.getRole() == 'conductor') {
-        this.socket.emit("registrar_conductor", this.user.idUser);
-      } else {
-        this.socket.emit('registrar_usuario', this.user.idUser);
-      }
-    });
-/*
-    this.socket.on('disconnect', () => {
-      console.log('Desconectado del servidor');
-    }); */
-  
-  }
-  }
- 
+    if (this.auth.isAuthenticated()) {
+      this.socket.on('connect', () => {
+        if (this.auth.getRole() == 'conductor') {
+      
+            this.socket.emit("registrar_conductor", this.user.idUser);
+          
+        } else {
+          this.socket.emit('registrar_usuario', this.user.idUser);
+        }
+      });
+      /*
+          this.socket.on('disconnect', () => {
+            console.log('Desconectado del servidor');
+          }); */
 
-     // Escuchar eventos del servidor
+    }
+  }
+
+
+  // Escuchar eventos del servidor
   listen(eventName: string, callback: (data: any) => void) {
     this.socket.on(eventName, callback);
   }
@@ -59,7 +65,7 @@ export class WebSocketService {
 
       return () => this.socket.off('nueva_solicitud');
     });
-         
+
   }
 
 

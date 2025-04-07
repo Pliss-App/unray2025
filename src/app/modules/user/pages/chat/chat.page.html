@@ -1,9 +1,9 @@
-<ion-header>
-  <ion-toolbar color="primary">
+<ion-header class="no-shadow">
+  <ion-toolbar class="no-shadow">
     <ion-title>Chat</ion-title>
-    <ion-buttons slot="end">
+    <ion-buttons slot="start">
       <ion-button (click)="closeModal()">
-        <ion-icon style="color: white;" slot="icon-only" name="close"></ion-icon>
+        <ion-icon style="color: black;" slot="icon-only" name="arrow-back"></ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
@@ -15,20 +15,27 @@
     <div class="message">{{ msg.mensaje }}</div>
   </div>
 </div>
+
+<div class="list-sms-definido" *ngIf="!isSelect">
+  <ion-chip *ngFor="let item of smsDefinidos" (click)="selectSMS(item)">
+    <ion-label>{{item.mensaje}}</ion-label>
+  </ion-chip>
+</div>
 </ion-content>
 
-<ion-footer>
-  <ion-item lines="none">
-    <ion-input     style="--padding-start: 10px;" 
-      [(ngModel)]="mensaje" 
-      placeholder="Escribe un mensaje" 
-      clearInput 
-
+<ion-footer class="transparent-footer">
+  <ion-item class="transparent-item" lines="none">
+    <ion-input
+      style="--padding-start: 10px;"
+      [(ngModel)]="mensaje"
+      placeholder="Mensaje"
+      clearInput
       type="text"
       autofocus
     ></ion-input>
-    <ion-button [disabled]="!mensaje" (click)="enviarMensaje()" fill="clear">
-      <ion-icon slot="icon-only" name="send"></ion-icon>
+    <ion-button color="success" [disabled]="!mensaje" (click)="enviarMensaje()" shape="round" class="round-button">
+      <ion-icon  style="color: white !important;"slot="icon-only" name="send"></ion-icon>
     </ion-button>
   </ion-item>
 </ion-footer>
+

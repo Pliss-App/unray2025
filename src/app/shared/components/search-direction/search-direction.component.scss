@@ -4,6 +4,7 @@
     --placeholder-color: #999; /* Color de placeholder */
     --color: #333; /* Color de texto */
     padding: 5px;
+    box-shadow: none;
   }
 
   
@@ -18,8 +19,8 @@
     position: absolute;
     bottom: 10px;
     z-index: 5;
-    left: 35%;
-    right:35%;
+    left: 20%;
+    right:20%;
   }
 
   @keyframes heartbeat {
@@ -59,3 +60,11 @@ ion-searchbar {
     left: 0px;
     z-index: 10;
   }
+
+  .transparent-header {
+    --ion-background-color: transparent;
+    box-shadow: none !important;
+    border-bottom: none !important;
+  }
+  
+  

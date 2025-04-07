@@ -4,6 +4,8 @@ import { AlertController, MenuController, NavController, ToastController } from 
 import { AuthService } from 'src/app/core/services/auth.service';
 import { UserService } from 'src/app/core/services/user.service';
 import { BehaviorSubject, Observable } from 'rxjs';
+import { Router } from '@angular/router';
+import { Location } from '@angular/common';
 
 @Component({
   selector: 'app-profile',
@@ -17,8 +19,10 @@ export class ProfilePage implements OnInit {
   profileForm!: FormGroup;
   isUpdateButtonDisabled: boolean = true;
   userRole: any;
+  rating: any = null;
+  stars: string[] = [];
 
-  constructor(private toastController: ToastController, private auth: AuthService,
+  constructor(private router: Router, private location: Location, private toastController: ToastController, private auth: AuthService,
     private navCtrl: NavController, private authService: AuthService, private menuController: MenuController, 
     private fb: FormBuilder, private api: UserService) {
     this.userRole = this.auth.getRole();
@@ -42,6 +46,7 @@ export class ProfilePage implements OnInit {
     if (isAuthenticated) {
       this.user = this.authService.getUser();
       this.username = this.user.nombre + " " + this.user.apellido;
+      this.getRating();
     }
 
   }
@@ -108,8 +113,54 @@ export class ProfilePage implements OnInit {
     }
   }
 
+  getRating() {
+
+    try {
+      this.api.getRating(this.user.idUser).subscribe((re) => {
+        if (re.msg == 'SUCCESSFULLY') {
+          this.rating = re.result;
+
+          this.updateStars(this.rating.rating);
+          return 0;
+        } else {
+          return 1;
+        }
+      })
+    } catch (error) {
+      console.log("error consultando Rating")
+    }
+
+  }
+
+  updateStars(valor: number) {
+    this.stars = Array(5)
+      .fill('star-outline')
+      .map((_, i) => {
+        if (i < Math.floor(valor)) {
+          return 'star'; // Estrella llena
+        } else if (i < valor) {
+          return 'star-half'; // Estrella a la mitad
+        } else {
+          return 'star-outline'; // Estrella vacía
+        }
+      });
+  }
+
+  copiarCodigo(codigo: string) {
+    if (!codigo) {
+      console.log("No hay código para copiar.");
+      return;
+    }
+  
+    navigator.clipboard.writeText(codigo).then(() => {
+      console.log("Código copiado:", codigo);
+    }).catch(err => {
+      console.error("Error al copiar:", err);
+    });
+  }
+
   goBack() {
-    this.navCtrl.back();
+      this.navCtrl.back();
   }
 
 }
